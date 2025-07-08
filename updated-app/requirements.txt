@@ -1,6 +1,0 @@
-openai
-requests
-python-dotenv
-pillow
-flask
-flask-cors

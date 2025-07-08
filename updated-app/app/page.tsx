@@ -156,7 +156,7 @@ export default function Portfolio() {
       setLoading(true);
       try {
         // 1. Call Flask API to generate image
-        const flaskRes = await fetch('http://127.0.0.1:5000/generate-image', {
+        const flaskRes = await fetch(`${process.env.NEXT_PUBLIC_FLASK_SERVER}/generate-image`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),
