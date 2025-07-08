@@ -47,13 +47,14 @@ class ImageGeneration:
         background = Image.open(BytesIO(bg_response.content)).convert("RGBA")
 
         # Load your transparent PNG
-        foreground_path = "/Users/sriramnatarajan/Documents/portfolio/updated-app/public/untitled folder 2/sriramtransparent.png"
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        foreground_path = os.path.join(BASE_DIR, "sriramtransparent.png")
         foreground = Image.open(foreground_path).convert("RGBA")
         foreground = foreground.resize(background.size)
 
         # Composite and save
         combined = Image.alpha_composite(background, foreground)
-
+        combined.save("combined.png")
         # combined = Image.new("RGBA", (600, 600), (255, 255, 255, 255))
 
 
@@ -88,3 +89,5 @@ class ImageGeneration:
 
 
 
+tester = ImageGeneration()
+tester.createImage("A beautiful landscape with a river and mountains")
