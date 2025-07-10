@@ -115,18 +115,27 @@ export default function Portfolio() {
   const [restatedPrompt, setRestatedPrompt] = useState("");
   const [imagesToday, setImagesToday] = useState(0);
   const maxImagesPerDay = 20;
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   // Fetch today's image generation count on mount
   useEffect(() => {
+    let isMounted = true;
     async function fetchImagesToday() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const isoToday = today.toISOString();
       const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
       const data = await res.json();
-      setImagesToday(data.count || 0);
+      if (isMounted) {
+        console.log('Fetched images today:', data.count);
+        setImagesToday(data.count || 0);
+      }
     }
     fetchImagesToday();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const imagesLeft = Math.max(0, maxImagesPerDay - imagesToday);
@@ -154,15 +163,17 @@ export default function Portfolio() {
     }
     if (email.trim()) {
       setLoading(true);
+      setShowNotification(true);
+      setNotificationMessage("Generating...");
       try {
-        // 1. Call Flask API to generate image
-        const flaskRes = await fetch(`${process.env.NEXT_PUBLIC_FLASK_SERVER}/generate-image`, {
+        // 1. Call Next.js API to generate image
+        const genRes = await fetch('/api/generate-images', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt }),
         });
-        const flaskData = await flaskRes.json();
-        const imageUrl = flaskData.image;
+        const genData = await genRes.json();
+        const imageUrl = genData.imageUrl;
 
         // 2. Store info in Supabase DB via your Next.js API
         await fetch('/api/submit-generation', {
@@ -175,9 +186,23 @@ export default function Portfolio() {
         setHeadshotUrl(imageUrl);
         setRestatedPrompt(prompt);
         setShowPrompt(true);
-        setImagesToday((prev) => prev + 1);
+        
+        // Refetch the actual count from the database
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const isoToday = today.toISOString();
+        const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
+        const data = await res.json();
+        console.log('Refetched images today after submission:', data.count);
+        setImagesToday(data.count || 0);
+        
+        // Delay the "Image ready!" notification by 4 seconds
+        setTimeout(() => {
+          setNotificationMessage("Image ready! 🎉");
+        }, 4000);
       } catch (err) {
         console.error('Error during image generation or DB upload:', err);
+        setNotificationMessage("Error generating image.");
       }
       setTimeout(() => {
         setLoading(false);
@@ -198,7 +223,7 @@ export default function Portfolio() {
       title: "Software and Strategy Intern",
       company: "Hacker Dojo",
       period: "April 2025 - Present",
-      location: "Remote",
+      location: "Mountain View, CA",
       description: [
         "-Contributed to Higher Road To You, an AI-driven mental health platform and collaborated with executives at Hacker Dojo to help support member outreach"
        
@@ -219,7 +244,7 @@ export default function Portfolio() {
       title: "Machine Learning<br />Research Associate",
       company: "University of Illinois, Ward Lab",
       period: "October 2024 - June 2025",
-      location: "Remote",
+      location: "Urbana, IL",
       description: [
         "-Processed satellite imagery and developed Machine Learning Models to predict habitat suitability of endangered bird species"
       ],
@@ -241,7 +266,7 @@ export default function Portfolio() {
       period: "September 2024 - Present",
       location: "Urbana, IL",
       description: [
-        "-Engineered the 6-axis Robotic Arm, optimizing real-time path planning and obstacle avoidance algorithms"
+        "-Engineered a 6-axis Robotic Arm, optimizing real-time path planning and obstacle avoidance algorithms"
       ],
       technologies: ["C++", "Arduino", "AWS RDS", "3D Printing", "ROS", "Gazebo"]
     },
@@ -287,7 +312,7 @@ export default function Portfolio() {
       period: "Sep 2024 - Dec 2024",
       description: [
         "Designed and implemented a Flask-based platform to connect UIUC students to research opportunities on campus (stored in SQL database). ",
-        "Implemented AI Features such as Cold Email Generator (used Chat GPT API to tailor emails specifically to a professor's specific projects) and Resume Reviewer (used a TfIdf vectorizer to compare a resume and job description)"
+        "Implemented AI Features such as Cold Email Generator (used Chat GPT API to tailor emails specifically to a professor's specific projects) and Resume Reviewer (used a TfIdf vectorizer to compare a resume and job description)."
       ],
       technologies: ["Java", "Android", "REST APIs", "SQLite", "JUnit"],
       featured: false,
@@ -471,7 +496,62 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900 overflow-x-hidden">
+    <>
+      {/* Notification Popup */}
+      {showNotification && (
+        <div
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            zIndex: 9999,
+            background: "#fff", // white background
+            color: "#222", // black text
+            padding: "2rem 2.5rem",
+            borderRadius: "2rem",
+            boxShadow: "0 4px 32px rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            gap: "1.5rem",
+            fontSize: "1.5rem",
+            minWidth: "340px",
+            minHeight: "80px"
+          }}
+        >
+          <span>{notificationMessage}</span>
+          {notificationMessage === "Image ready! 🎉" && (
+            <button
+              style={{
+                background: "#38bdf8",
+                color: "#fff",
+                border: "none",
+                borderRadius: "0.75rem",
+                padding: "0.75rem 1.5rem",
+                cursor: "pointer",
+                fontSize: "1.1rem"
+              }}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            >
+              Scroll to Top
+            </button>
+          )}
+          <button
+            style={{
+              background: "transparent",
+              color: "#222", // black close button
+              border: "none",
+              fontSize: "2rem",
+              marginLeft: "0.75rem",
+              cursor: "pointer"
+            }}
+            onClick={() => setShowNotification(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+      )}
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900 overflow-x-hidden">
       {/* Custom CSS for animations */}
       <style jsx global>{`
         @keyframes gradient {
@@ -521,14 +601,7 @@ export default function Portfolio() {
                 )
               ))}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="hover:bg-blue-500/20 hover:border-blue-400 transition-all duration-300 bg-transparent border-blue-400/50 text-blue-100"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Resume
-            </Button>
+            
           </div>
         </div>
       </nav>
@@ -627,6 +700,9 @@ export default function Portfolio() {
                     width={600}
                     height={600}
                     className="relative rounded-full border-8 border-white/20 shadow-2xl hover:scale-105 transition-transform duration-500"
+                    onLoad={() => {
+                      // Image loaded successfully
+                    }}
                   />
                   )}
                     </div>
@@ -634,7 +710,8 @@ export default function Portfolio() {
               <div className="mt-6 flex flex-col items-center justify-center text-center ml-12">
                 {loading ? (
                   <div className="mt-6 flex flex-col items-center justify-center text-center">
-                    <h2 className="text-2xl font-bold text-blue-200 mb-2">Loading... (This can take up to 20 seconds so feel free to come back)</h2>
+                    <h2 className="text-2xl font-bold text-blue-200 mb-2">Loading...</h2>
+                    <p className="text-lg text-blue-100">(Feel free to scroll, we'll let you know when your image is ready!)</p>
                 </div>
                 ) : imagesLeft === 0 ? (
                   <div className="mt-6 flex flex-col items-center justify-center text-center">
@@ -854,8 +931,7 @@ export default function Portfolio() {
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold text-white mb-6">Featured Projects</h2>
             <p className="text-xl text-blue-100 max-w-4xl mx-auto">
-              Showcasing innovative solutions that have impacted thousands of users and driven significant business
-              growth
+              My most impressive and impactful projects that I've worked on!
             </p>
           </div>
 
@@ -1274,10 +1350,10 @@ export default function Portfolio() {
             <div>
               <h4 className="font-bold text-white mb-4">Services</h4>
               <ul className="space-y-2 text-blue-200">
-                <li>Web Development</li>
-                <li>Mobile Apps</li>
-                <li>AI Solutions</li>
-                <li>Consulting</li>
+                <li>Full-Stack Development</li>
+                <li>Backend & APIs</li>
+                <li>AI/ML Solutions</li>
+                <li>Cloud & DevOps</li>
               </ul>
             </div>
           </div>
@@ -1290,5 +1366,6 @@ export default function Portfolio() {
         </div>
       </footer>
     </div>
+    </>
   )
 }
