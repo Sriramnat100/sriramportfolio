@@ -220,12 +220,24 @@ export default function Portfolio() {
 
   const experience = [
     {
+      title: "Embedded Software Intern",
+      company: "Rivian",
+      period: "February 2025 - Present",
+      location: "Champaign, IL",
+      description: [
+        "-Working on Inverter Team"
+      ],
+      technologies: ["Python", "C++", "C"]
+    },
+
+
+    {
       title: "Software and Strategy Intern",
       company: "Hacker Dojo",
-      period: "April 2025 - Present",
+      period: "April 2025 - August 2025",
       location: "Mountain View, CA",
       description: [
-        "-Contributed to Higher Road To You, an AI-driven mental health platform and collaborated with executives at Hacker Dojo to help support member outreach"
+        "-Contributed to AI-driven health & wellness platform (1000+ users) and collaborated with executives at Hacker Dojo to help support member outreach"
        
       ],
       technologies: ["Python", "Flask", "AWS", "OpenAI API", "React"]
@@ -246,7 +258,7 @@ export default function Portfolio() {
       period: "October 2024 - June 2025",
       location: "Urbana, IL",
       description: [
-        "-Processed satellite imagery and developed Machine Learning Models to predict habitat suitability of endangered bird species"
+        "-Processed satellite imagery and developed Machine Learning Models to predict habitat suitability of endangered species"
       ],
       technologies: ["Python", "MATLAB", "TensorFlow", "PyTorch"]
     },
@@ -263,7 +275,7 @@ export default function Portfolio() {
     {
       title: "Software Engineer Intern",
       company: "Gies Disruption Labs",
-      period: "September 2024 - Present",
+      period: "September 2024 - December 2025",
       location: "Urbana, IL",
       description: [
         "-Engineered a 6-axis Robotic Arm, optimizing real-time path planning and obstacle avoidance algorithms"
@@ -369,7 +381,7 @@ export default function Portfolio() {
       name: "Basketball",
       description: "",
       icon: () => <span role="img" aria-label="Basketball">🏀</span>,
-      image:  "/untitled folder 2/sriramwarriorsgame.jpg",
+      image:  "/untitled folder 2/balltuff.png",
       color: "",
     },
     {
@@ -415,12 +427,12 @@ export default function Portfolio() {
     grad: "Expected Graduation: 05/2027",
     major: "Computer Science + Linguistics",
     minor: "Data Science",
-    gpa: "3.93/4.0",
+    gpa: "3.90/4.0",
     coursework: [
       "Data Structures and<br />Algorithms (C++)",
-      "Data Science & Statistical<br />Foundations (Python)",
       "Copmuter Architecture br /> (C++)",
-      "Statistical & Probabilistic<br />Analysis (R)",
+      "Database Systems (SQL)",
+      "Intro to Algs & Models of Comp"
 
     ]
   };
@@ -773,7 +785,7 @@ export default function Portfolio() {
                 <span className="text-blue-400">&nbsp;Urbana</span>
                 <span className="text-orange-400">-Champaign</span>
               </h3>
-              <div className="text-3xl text-blue-100 font-semibold mb-12">Expected Graduation: {education.grad.replace('Expected Graduation: ', '')}</div>
+              <div className="text-3xl text-blue-100 font-semibold mb-12">Expected Graduation Date: {education.grad.replace('Expected Graduation: ', '')}</div>
             </div>
             
             <div className="w-full grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8 lg:gap-16 items-start">
@@ -808,17 +820,17 @@ export default function Portfolio() {
               <div className="flex flex-col items-start text-left max-w-xl w-full space-y-8">
                 <h4 className="text-4xl sm:text-5xl font-extrabold text-blue-200 mb-8">Relevant Coursework</h4>
                 <div className="flex flex-col gap-6 w-full">
-                  <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Data Structures and<br />Algorithms (C++)
+                <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
+                  Intro to Algorithims & Models of Comp
                   </span>
                   <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Data Science & Statistical<br />Foundations (Python)
+                    Data Structures and Algorithms (C++)
                   </span>
                   <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
                     Computer Architecture <br />(C++)
                   </span>
                   <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Statistical & Probabilistic<br />Analysis (R)
+                    Database Systems <br />(SQL)
                   </span>
             
                 </div>
