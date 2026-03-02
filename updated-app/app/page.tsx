@@ -287,6 +287,21 @@ export default function Portfolio() {
 
   const projects = [
     {
+      title: "Cat Vision Copilot (Second Place Hack Illinois)",
+      period: "Feb 2026 - Mar 2026",
+      description: [
+        "Built an AI-powered inspection system to detect and analyze component defects on Caterpillar machinery"
+      ],
+      technologies: ["YOLO", "TypeScript", "OpenAI API", "TensorFlow", "Supabase"],
+      featured: true,
+      category: "AI/ML",
+      longDescription: "Built an AI-powered inspection system to detect and analyze component defects on Caterpillar machinery",
+      github: "https://github.com/Sriramnat100/HackIllinois26",
+      demo: "https://devpost.com/software/cat-vision",
+      image: "/untitled folder 2/cvc.jpg"
+    },
+
+    {
       title: "FarmSmart (First Place Hack Illinois)",
       period: "Feb 2025 - Mar 2025",
       description: [
@@ -967,7 +982,7 @@ export default function Portfolio() {
 
                     {/* Project Stats */}
                     <div className="grid grid-cols-3 gap-4 py-4">
-                      {['FarmSmart (First Place Hack Illinois)', 'Calmoto'].includes(project.title) ? (
+                      {!project.stats || ['FarmSmart (First Place Hack Illinois)', 'Calmoto'].includes(project.title) ? (
                         <>
                           <div></div>
                           <div></div>
