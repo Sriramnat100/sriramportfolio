@@ -1098,26 +1098,27 @@ export default function Portfolio() {
 
                   <CardContent className="space-y-4">
                     {/* Mini Stats */}
-                    {![
-                      'IlliniResearch',
-                      'Beyond Terra',
-                      "Alzheimer's Researcher"
-                    ].includes(project.title) && (
-                      <div className="flex justify-between text-sm text-blue-200">
-                        <span className="flex items-center">
-                          <Eye className="w-4 h-4 mr-1" />
-                          {project.stats.users}
-                        </span>
-                        <span className="flex items-center">
-                          <Star className="w-4 h-4 mr-1 fill-current text-yellow-400" />
-                          {project.stats.rating}
-                        </span>
-                        <span className="flex items-center">
-                          <Download className="w-4 h-4 mr-1" />
-                          {project.stats.downloads}
-                        </span>
-                      </div>
-                    )}
+                    {project.stats &&
+                      ![
+                        'IlliniResearch',
+                        'Beyond Terra',
+                        "Alzheimer's Researcher"
+                      ].includes(project.title) && (
+                        <div className="flex justify-between text-sm text-blue-200">
+                          <span className="flex items-center">
+                            <Eye className="w-4 h-4 mr-1" />
+                            {project.stats.users}
+                          </span>
+                          <span className="flex items-center">
+                            <Star className="w-4 h-4 mr-1 fill-current text-yellow-400" />
+                            {project.stats.rating}
+                          </span>
+                          <span className="flex items-center">
+                            <Download className="w-4 h-4 mr-1" />
+                            {project.stats.downloads}
+                          </span>
+                        </div>
+                      )}
                     <div className="flex flex-wrap gap-1">
                       {project.technologies.slice(0, 3).map((tech, techIndex) => (
                         <Badge
