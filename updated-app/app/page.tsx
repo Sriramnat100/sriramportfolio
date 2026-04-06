@@ -280,7 +280,8 @@ export default function Portfolio() {
       description: [
         "-Engineered a 6-axis Robotic Arm, optimizing real-time path planning and obstacle avoidance algorithms"
       ],
-      technologies: ["C++", "Arduino", "AWS RDS", "3D Printing", "ROS", "Gazebo"]
+      technologies: ["C++", "Arduino", "AWS RDS", "3D Printing", "ROS", "Gazebo"],
+      demo: "https://v0-lerobot-arm.vercel.app/"
     },
     
   ]
@@ -918,6 +919,17 @@ export default function Portfolio() {
                       ) : (
                         <p className="text-blue-100 mb-4 leading-relaxed">{exp.description as string}</p>
                       )
+                    ) : null}
+                    {"demo" in exp && exp.demo ? (
+                      <Link
+                        href={exp.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200 text-sm font-medium mb-4 transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                        Lerobot project
+                      </Link>
                     ) : null}
                     {/* Remove stats row for specific cards */}
                     {![
