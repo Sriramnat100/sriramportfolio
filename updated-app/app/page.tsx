@@ -220,12 +220,23 @@ export default function Portfolio() {
 
   const experience = [
     {
-      title: "Embedded Software Intern",
+      title: "Forward Deployed Software Engineer Intern",
+      company: "C3 AI",
+      period: "May 2026 - Present",
+      location: "Redwood City, CA",
+      description: [
+        "-Member of Federal Team"
+      ],
+      technologies: ["Python", "SQL", "C3 AI Platform"]
+    },
+    
+    {
+      title: "Embedded Software Engineer Intern",
       company: "Rivian",
-      period: "February 2025 - Present",
+      period: "February 2026 - May 2026",
       location: "Champaign, IL",
       description: [
-        "-Working on Inverter Team"
+        "-Worked on Inverter Team"
       ],
       technologies: ["Python", "C++", "C"]
     },
@@ -237,7 +248,7 @@ export default function Portfolio() {
       period: "April 2025 - August 2025",
       location: "Mountain View, CA",
       description: [
-        "-Contributed to AI-driven health & wellness platform (1000+ users) and collaborated with executives at Hacker Dojo to help support member outreach"
+        "-Contributed to AI-driven health & wellness platform (1000+ users)"
        
       ],
       technologies: ["Python", "Flask", "AWS", "OpenAI API", "React"]
@@ -250,7 +261,9 @@ export default function Portfolio() {
       description: [
         "-Assisted students to develop and debug a full-stack application with user authentication, backend APIs, and frontend UI"
       ],
-      technologies: ["Teaching", "Debugging", "Full-Stack"]
+      technologies: ["Teaching", "Debugging", "Full-Stack"],
+      demo: "https://illinotes.com/",
+      demoLabel: "one of my students' websites"
     },
     {
       title: "Machine Learning<br />Research Associate",
@@ -443,7 +456,7 @@ export default function Portfolio() {
     grad: "Expected Graduation: 05/2027",
     major: "Computer Science + Linguistics",
     minor: "Data Science",
-    gpa: "3.90/4.0",
+    gpa: "3.85/4.0",
     coursework: [
       "Data Structures and<br />Algorithms (C++)",
       "Copmuter Architecture br /> (C++)",
@@ -928,7 +941,7 @@ export default function Portfolio() {
                         className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200 text-sm font-medium mb-4 transition-colors"
                       >
                         <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                        Lerobot project
+                        {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot project"}
                       </Link>
                     ) : null}
                     {/* Remove stats row for specific cards */}
@@ -1354,8 +1367,7 @@ export default function Portfolio() {
                 Sriram Natarajan
               </div>
               <p className="text-blue-100 mb-6 leading-relaxed max-w-md">
-                Full-Stack Developer & AI Architect passionate about creating innovative solutions that make a
-                difference in the world.
+                
               </p>
               <div className="flex space-x-4">
                 {[

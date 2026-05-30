@@ -1,8 +1,8 @@
 # Codebase Index
 
-**Last Updated:** February 13, 2026  
+**Last Updated:** May 29, 2026  
 **Project:** Portfolio Website - Sriram Natarajan  
-**Framework:** Next.js 15.3.5 (App Router)  
+**Framework:** Next.js 15.3.6 (App Router)  
 **Language:** TypeScript
 
 ---
@@ -85,7 +85,7 @@ portfolio/
 - `metadata`: Site metadata (title, description)
 - `RootLayout`: Main layout wrapper
 
-### **app/page.tsx** (1,372 lines)
+### **app/page.tsx** (1,424 lines)
 Main portfolio page component with all sections:
 
 **State Management:**
@@ -118,11 +118,15 @@ Main portfolio page component with all sections:
 8. **Footer**: Site footer with links
 
 **Data Arrays:**
-- `stats`: Achievement statistics
-- `experience`: Professional experience entries
-- `projects`: Portfolio projects
-- `hobbies`: Personal hobbies
-- `skills`: Technical skills with proficiency levels
+- `stats`: Achievement statistics (3 items)
+- `experience`: Professional experience entries (7 items — C3 AI, Rivian, Hacker Dojo, CS124 CA, Ward Lab, Illinois Design Challenge, Gies Disruption Labs)
+- `projects`: Portfolio projects (6 items — Cat Vision Copilot featured first)
+- `hobbies`: Personal hobbies (Running, Basketball, Music)
+- `skills`: Technical skills with proficiency levels (16 items)
+- `education`, `contact`, `about`: Static profile content
+
+**Experience entry extensions:**
+- Optional `demo` URL and `demoLabel` for custom link text (e.g. CS124 → illinotes.com)
 
 ### **app/api/generate-images/route.ts**
 Image generation API endpoint.
@@ -214,7 +218,7 @@ Utility function:
 
 ### **package.json**
 **Dependencies:**
-- `next`: ^15.3.5
+- `next`: ^15.3.6
 - `react`: ^19.1.0
 - `react-dom`: ^19.1.0
 - `typescript`: ^5
@@ -344,6 +348,8 @@ shadcn/ui configuration for component generation.
   location: string;
   description: string[];
   technologies: string[];
+  demo?: string;       // Optional external link
+  demoLabel?: string;  // Custom link label (defaults to "Lerobot project" when demo set)
 }
 ```
 
@@ -382,7 +388,8 @@ shadcn/ui configuration for component generation.
 
 ## 🚀 Deployment
 
-**Platform:** Vercel (recommended by Next.js)  
+**Platform:** Vercel  
+**Root Directory:** `updated-app` (set in Vercel project settings)  
 **Build Command:** `npm run build`  
 **Output Directory:** `.next`
 
