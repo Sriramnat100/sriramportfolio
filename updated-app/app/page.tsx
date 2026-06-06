@@ -40,6 +40,12 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
+import { createClient } from "@supabase/supabase-js"
+
+const supabaseBrowser = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
@@ -107,7 +113,10 @@ export default function Portfolio() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
-  const [step, setStep] = useState<"prompt" | "email">("prompt");
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [step, setStep] = useState<"prompt" | "email" | "otp">("prompt");
   const [loading, setLoading] = useState(false);
   const [showGif, setShowGif] = useState(false);
   const [headshotUrl, setHeadshotUrl] = useState("/untitled folder 2/SriramHeadshot.jpg");
@@ -148,6 +157,51 @@ export default function Portfolio() {
     alert("Message sent! I'll get back to you soon.")
   }
 
+  // Shared image-generation routine. `verifiedFor` is an email we've already
+  // confirmed (either via a one-time code, or because it's already in the DB).
+  const runGeneration = async (verifiedFor: string) => {
+    setLoading(true);
+    setShowNotification(true);
+    setNotificationMessage("Generating...");
+    try {
+      const genRes = await fetch('/api/generate-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      });
+      const genData = await genRes.json();
+      const imageUrl = genData.imageUrl;
+
+      await fetch('/api/submit-generation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verifiedFor, prompt, image_url: imageUrl }),
+      });
+
+      setHeadshotUrl(imageUrl);
+      setRestatedPrompt(prompt);
+      setShowPrompt(true);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const isoToday = today.toISOString();
+      const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
+      const data = await res.json();
+      setImagesToday(data.count || 0);
+
+      setTimeout(() => {
+        setNotificationMessage("Image ready! 🎉");
+      }, 4000);
+    } catch (err) {
+      console.error('Error during image generation or DB upload:', err);
+      setNotificationMessage("Error generating image.");
+    }
+    setTimeout(() => {
+      setLoading(false);
+      setShowGif(false);
+    }, 6000);
+  };
+
   const handlePromptSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim()) {
@@ -161,54 +215,55 @@ export default function Portfolio() {
       alert("Sorry, it's not free for me to generate images. Come back tomorrow to put me somewhere else :)");
       return;
     }
-    if (email.trim()) {
-      setLoading(true);
-      setShowNotification(true);
-      setNotificationMessage("Generating...");
-      try {
-        // 1. Call Next.js API to generate image
-        const genRes = await fetch('/api/generate-images', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt }),
-        });
-        const genData = await genRes.json();
-        const imageUrl = genData.imageUrl;
+    if (!email.trim()) return;
+    setSendingOtp(true);
+    setOtpError("");
 
-        // 2. Store info in Supabase DB via your Next.js API
-        await fetch('/api/submit-generation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, prompt, image_url: imageUrl }),
-        });
-
-        // 3. Update the UI to show the new image
-        setHeadshotUrl(imageUrl);
-        setRestatedPrompt(prompt);
-        setShowPrompt(true);
-        
-        // Refetch the actual count from the database
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const isoToday = today.toISOString();
-        const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
-        const data = await res.json();
-        console.log('Refetched images today after submission:', data.count);
-        setImagesToday(data.count || 0);
-        
-        // Delay the "Image ready!" notification by 4 seconds
-        setTimeout(() => {
-          setNotificationMessage("Image ready! 🎉");
-        }, 4000);
-      } catch (err) {
-        console.error('Error during image generation or DB upload:', err);
-        setNotificationMessage("Error generating image.");
+    // If this email has generated before, it's already verified — skip the code.
+    try {
+      const checkRes = await fetch('/api/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const checkData = await checkRes.json();
+      if (checkData.exists) {
+        setSendingOtp(false);
+        await runGeneration(email.trim());
+        return;
       }
-      setTimeout(() => {
-        setLoading(false);
-        setShowGif(false);
-      }, 6000);
+    } catch (err) {
+      console.error('Email check failed, falling back to code verification:', err);
     }
+
+    // New email — verify ownership with a one-time code.
+    const { error } = await supabaseBrowser.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: true },
+    });
+    setSendingOtp(false);
+    if (error) {
+      setOtpError(error.message);
+      return;
+    }
+    setStep("otp");
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim()) return;
+    setOtpError("");
+    const { error: verifyError } = await supabaseBrowser.auth.verifyOtp({
+      email: email.trim(),
+      token: otp.trim(),
+      type: "email",
+    });
+    if (verifyError) {
+      setOtpError("Invalid or expired code. Try again.");
+      return;
+    }
+
+    await runGeneration(email.trim());
   };
 
   const stats = [
@@ -764,7 +819,7 @@ export default function Portfolio() {
                     <p className="text-xl text-blue-100">{restatedPrompt}</p>
             </div>
                 ) : (
-                  <form onSubmit={step === 'prompt' ? handlePromptSubmit : handleEmailSubmit} className="w-full max-w-md mx-auto">
+                  <form onSubmit={step === 'prompt' ? handlePromptSubmit : step === 'email' ? handleEmailSubmit : handleOtpSubmit} className="w-full max-w-md mx-auto">
                     {step === 'prompt' ? (
                       <>
                         <div className="mb-4 text-xl font-bold text-blue-200">
@@ -779,15 +834,32 @@ export default function Portfolio() {
                           Add a new background!
                         </Button>
                       </>
-                    ) : (
+                    ) : step === 'email' ? (
                       <>
                         <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email to continue (no password I promise)" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200" />
+                        {otpError && <div className="mt-2 text-red-400 text-sm">{otpError}</div>}
+                        <Button
+                          type="submit"
+                          disabled={sendingOtp}
+                          className="mt-4 w-full text-xl py-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow text-3xl"
+                          style={{ fontSize: '2rem', padding: '1.5rem 2rem' }}
+                        >
+                          {sendingOtp ? "Sending code..." : "Send me a code"}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-3 text-blue-200 text-base">
+                          Check <span className="font-bold">{email}</span> for a 6-digit code.
+                        </div>
+                        <Input type="text" inputMode="numeric" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter 6-digit code" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200 tracking-widest text-center" />
+                        {otpError && <div className="mt-2 text-red-400 text-sm">{otpError}</div>}
                         <Button
                           type="submit"
                           className="mt-4 w-full text-xl py-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow text-3xl"
                           style={{ fontSize: '2rem', padding: '1.5rem 2rem' }}
                         >
-                          Add a new background!
+                          Verify & Generate
                         </Button>
                       </>
                     )}
