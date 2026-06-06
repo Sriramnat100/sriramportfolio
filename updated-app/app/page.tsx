@@ -328,7 +328,9 @@ export default function Portfolio() {
       description: [
         "-Processed satellite imagery and developed Machine Learning Models to predict habitat suitability of endangered species"
       ],
-      technologies: ["Python", "MATLAB", "TensorFlow", "PyTorch"]
+      technologies: ["Python", "MATLAB", "TensorFlow", "PyTorch"],
+      demo: "https://v0-bird-population-website.vercel.app/",
+      demoLabel: "Bird population website"
     },
     {
       title: "Infrastructure Lead",
