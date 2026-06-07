@@ -39,6 +39,7 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import IntroSplash from "@/components/IntroSplash"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@supabase/supabase-js"
 
@@ -126,6 +127,15 @@ export default function Portfolio() {
   const maxImagesPerDay = 20;
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+
+  // Hide the nav while the intro splash is on screen; reveal it on scroll.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Fetch today's image generation count on mount
   useEffect(() => {
@@ -330,7 +340,7 @@ export default function Portfolio() {
       ],
       technologies: ["Python", "MATLAB", "TensorFlow", "PyTorch"],
       demo: "https://v0-bird-population-website.vercel.app/",
-      demoLabel: "Bird population website"
+      demoLabel: "Research Website"
     },
     {
       title: "Infrastructure Lead",
@@ -510,7 +520,7 @@ export default function Portfolio() {
   const about = `Hi! I'm Sriram Natarajan, a Computer Science and Linguistics major at the University of Illinois Urbana-Champaign, also pursuing a minor in Data Science. I love building things that sit at the intersection of software, machine learning, and real-world impact. I'm especially excited by projects that blend AI with practical problem-solving, and I'm always down to collaborate, learn something new, or chase an idea that feels a little too ambitious.`;
   const education = {
     school: "University of Illinois, Urbana-Champaign",
-    grad: "Expected Graduation: 05/2027",
+    grad: "Expected Graduation: 05/2028",
     major: "Computer Science + Linguistics",
     minor: "Data Science",
     gpa: "3.85/4.0",
@@ -662,6 +672,23 @@ export default function Portfolio() {
         }
         .animate-gradient { animation: gradient 8s ease infinite; }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        @keyframes intro-name {
+          0%   { opacity: 0; transform: translateY(28px) scale(0.94); filter: blur(14px); }
+          60%  { filter: blur(0); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes intro-fade-up {
+          0%   { opacity: 0; transform: translateY(16px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes intro-glow {
+          0%, 100% { opacity: 0.35; transform: scale(1); }
+          50%      { opacity: 0.6; transform: scale(1.08); }
+        }
+        /* Name fades/blurs in once, while the gradient keeps shimmering */
+        .animate-intro-name { animation: intro-name 1.9s cubic-bezier(0.22, 1, 0.36, 1) both, gradient 8s ease infinite; }
+        .animate-intro-cue  { animation: intro-fade-up 1s ease-out 2.2s both; }
+        .animate-intro-glow { animation: intro-glow 6s ease-in-out infinite; }
         .glass-effect {
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
@@ -670,7 +697,7 @@ export default function Portfolio() {
       `}</style>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-slate-900/90 backdrop-blur-xl z-50 border-b border-blue-500/20 shadow-lg">
+      <nav className={`fixed top-0 w-full bg-slate-900/90 backdrop-blur-xl z-50 border-b border-blue-500/20 shadow-lg transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">
@@ -704,6 +731,9 @@ export default function Portfolio() {
         </div>
       </nav>
 
+      {/* Intro Splash — full-screen interactive name reveal */}
+      <IntroSplash />
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Background Elements */}
@@ -723,11 +753,11 @@ export default function Portfolio() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-6">
-                <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-200 text-sm font-medium border border-blue-400/30 shadow-sm backdrop-blur-sm">
+                {/* <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-200 text-sm font-medium border border-blue-400/30 shadow-sm backdrop-blur-sm">
                   <Star className="w-4 h-4 mr-2 animate-pulse" />
                   Available for new opportunities
                   <ChevronRight className="w-4 h-4 ml-2" />
-                </div>
+                </div> */}
 
                 <div className="space-y-4">
                   <h1 className="text-6xl lg:text-8xl font-bold text-white leading-tight">
@@ -1015,7 +1045,7 @@ export default function Portfolio() {
                         className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200 text-sm font-medium mb-4 transition-colors"
                       >
                         <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                        {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot project"}
+                        {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot Project"}
                       </Link>
                     ) : null}
                     {/* Remove stats row for specific cards */}
