@@ -36,10 +36,12 @@ import {
   BookOpen,
   Coffee,
   ChevronLeft,
+  ChevronDown,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import IntroSplash from "@/components/IntroSplash"
+import EducationCarousel from "@/components/EducationCarousel"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@supabase/supabase-js"
 
@@ -47,6 +49,60 @@ const supabaseBrowser = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+// Expandable course card (Education section)
+type Course = { code: string; title: string; tools: string[]; description: string; skills: string[] };
+function CourseCard({ course }: { course: Course }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden transition-colors hover:border-blue-400/40">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between gap-4 p-5 text-left"
+        aria-expanded={open}
+      >
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="shrink-0 text-xs font-bold text-blue-300 bg-blue-500/15 border border-blue-400/30 rounded-md px-2.5 py-1">
+            {course.code}
+          </span>
+          <span className="font-semibold text-white">{course.title}</span>
+        </div>
+        <ChevronDown className={`w-5 h-5 text-blue-300 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+        <div className="overflow-hidden">
+          <div className="px-5 pb-5 space-y-4">
+            <p className="text-blue-100/80 text-sm leading-relaxed">{course.description}</p>
+            <div>
+              <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">Tools &amp; Languages</div>
+              {course.tools.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {course.tools.map((tool) => (
+                    <span key={tool} className="bg-orange-500/15 text-orange-200 border border-orange-400/30 rounded-full px-3 py-1 text-xs font-medium">
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-blue-200/60 text-sm italic">Theory-focused — no coding</span>
+              )}
+            </div>
+            <div>
+              <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">Skills Learned</div>
+              <div className="flex flex-wrap gap-2">
+                {course.skills.map((skill) => (
+                  <span key={skill} className="bg-blue-500/15 text-blue-100 border border-blue-400/25 rounded-full px-3 py-1 text-xs font-medium">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
@@ -287,6 +343,7 @@ export default function Portfolio() {
     {
       title: "Forward Deployed Software Engineer Intern",
       company: "C3 AI",
+      logo: "/logos/c3l.png",
       period: "May 2026 - Present",
       location: "Redwood City, CA",
       description: [
@@ -298,6 +355,7 @@ export default function Portfolio() {
     {
       title: "Embedded Software Engineer Intern",
       company: "Rivian",
+      logo: "/logos/rivianlogo.png",
       period: "February 2026 - May 2026",
       location: "Champaign, IL",
       description: [
@@ -310,6 +368,7 @@ export default function Portfolio() {
     {
       title: "Software and Strategy Intern",
       company: "Hacker Dojo",
+      logo: "/logos/hdfinal.png",
       period: "April 2025 - August 2025",
       location: "Mountain View, CA",
       description: [
@@ -321,6 +380,7 @@ export default function Portfolio() {
     {
       title: "Course Assistant<br />Computer Science 124",
       company: "University of Illinois Urbana-Champaign",
+      logo: "/logos/uiuc.png",
       period: "January 2025 - Present",
       location: "Urbana, IL",
       description: [
@@ -333,6 +393,7 @@ export default function Portfolio() {
     {
       title: "Machine Learning<br />Research Associate",
       company: "University of Illinois, Ward Lab",
+      logo: "/logos/fwlab.png",
       period: "October 2024 - June 2025",
       location: "Urbana, IL",
       description: [
@@ -345,6 +406,7 @@ export default function Portfolio() {
     {
       title: "Infrastructure Lead",
       company: "Illinois Design Challenge",
+      logo: "/logos/idclogo.jpeg",
       period: "September 2024 - Present",
       location: "Urbana, IL",
       description: [
@@ -355,6 +417,7 @@ export default function Portfolio() {
     {
       title: "Software Engineer Intern",
       company: "Gies Disruption Labs",
+      logo: "/logos/gies.png",
       period: "September 2024 - December 2025",
       location: "Urbana, IL",
       description: [
@@ -525,13 +588,79 @@ export default function Portfolio() {
     minor: "Data Science",
     gpa: "3.85/4.0",
     coursework: [
-      "Data Structures and<br />Algorithms (C++)",
-      "Copmuter Architecture br /> (C++)",
+      "Intro to Algorithms & Models of Computation",
+      "Data Structures & Algorithms (C++)",
+      "Computer Architecture (C++)",
       "Database Systems (SQL)",
-      "Intro to Algs & Models of Comp"
-
     ]
   };
+
+  const courses = [
+    {
+      code: "CS 374",
+      title: "Intro to Algorithms & Models of Computation",
+      tools: [],
+      description:
+        "Analysis of algorithms and the major paradigms of algorithm design: recursion, divide-and-conquer, dynamic programming, greedy, and graph algorithms. Covers formal models of computation (finite automata, Turing machines) and the limits of computation — reductions, undecidability, and NP-completeness.",
+      skills: ["Dynamic Programming", "Divide & Conquer", "Greedy Algorithms", "Graph Algorithms", "Finite Automata", "Turing Machines", "NP-Completeness", "Reductions"],
+    },
+    {
+      code: "CS 411",
+      title: "Database Systems",
+      tools: ["SQL", "Python", "JavaScript"],
+      description:
+        "The logical organization of databases: entity-relationship modeling and the relational model. Functional dependencies and normalization, query-language design and optimization, security and integrity, concurrency control, and distributed databases.",
+      skills: ["Relational Modeling", "ER Diagrams", "Normalization", "Query Optimization", "Concurrency Control", "Distributed Databases"],
+    },
+    {
+      code: "CS 225",
+      title: "Data Structures",
+      tools: ["C++"],
+      description:
+        "Core data structures — lists, stacks, queues, and trees — implemented in an object-oriented language. Solving computational problems with searches over graphs and trees, plus elementary analysis of algorithms.",
+      skills: ["Lists / Stacks / Queues", "Trees", "Graphs", "Object-Oriented Programming", "Algorithm Analysis", "Memory Management"],
+    },
+    {
+      code: "CS 233",
+      title: "Computer Architecture",
+      tools: ["Verilog", "Assembly", "C"],
+      description:
+        "Fundamentals of computer architecture from the logic-gate level up: digital logic design, machine-level programming, performance models of modern architectures, and hardware primitives for parallelism and security.",
+      skills: ["Digital Logic Design", "Machine-Level Programming", "Performance Optimization", "Parallelism", "Hardware Security"],
+    },
+    {
+      code: "CS 173",
+      title: "Discrete Structures",
+      tools: [],
+      description:
+        "Discrete mathematical structures used throughout computer science: sets, propositions, Boolean algebra, induction, recursion, relations, functions, and graphs.",
+      skills: ["Set Theory", "Logic & Boolean Algebra", "Mathematical Induction", "Recursion", "Relations & Functions", "Graph Theory", "Proof Techniques"],
+    },
+    {
+      code: "STAT 400",
+      title: "Statistics & Probability",
+      tools: ["R"],
+      description:
+        "Mathematical statistics built on probability: the calculus of probability, random variables, expectation, distribution functions, the central limit theorem, point estimation, confidence intervals, and hypothesis testing.",
+      skills: ["Probability Theory", "Random Variables", "Distributions", "Central Limit Theorem", "Estimation", "Confidence Intervals", "Hypothesis Testing"],
+    },
+    {
+      code: "MATH 257",
+      title: "Linear Algebra with Computational Applications",
+      tools: ["Python", "NumPy"],
+      description:
+        "Linear algebra with hands-on computation and data-science applications: linear systems, matrix operations, vector spaces, linear transformations, eigenvalues and eigenvectors, orthogonality, linear regression, linear dynamical systems, and the singular value decomposition.",
+      skills: ["Matrix Operations", "Vector Spaces", "Linear Transformations", "Eigenvalues & Eigenvectors", "Orthogonality", "Linear Regression", "SVD"],
+    },
+    {
+      code: "LING 270",
+      title: "Language, Technology & Society",
+      tools: [],
+      description:
+        "How humans built technologies to augment language — from writing and printing into the digital age. Explores automatic speech recognition, speech synthesis, and machine translation, the machine-learning theory behind them, and how they shape human-machine interaction.",
+      skills: ["NLP Concepts", "Speech Recognition", "Speech Synthesis", "Machine Translation", "How ML Models Work", "Human-Machine Interaction"],
+    },
+  ];
 
   const typedText = useTypingEffect("Hi, I'm Sriram Natarajan", 60);
   const isComplete = typedText === "Hi, I'm Sriram Natarajan";
@@ -868,7 +997,7 @@ export default function Portfolio() {
                       </>
                     ) : step === 'email' ? (
                       <>
-                        <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email to continue (no password I promise)" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200" />
+                        <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email (no code sent if you've already verified before)" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200" />
                         {otpError && <div className="mt-2 text-red-400 text-sm">{otpError}</div>}
                         <Button
                           type="submit"
@@ -909,63 +1038,56 @@ export default function Portfolio() {
               {/* Education Section */}
         <section
           id="education"
-          className="py-24 px-2 sm:px-8 lg:px-16 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900 relative"
+          className="py-24 px-4 sm:px-8 lg:px-10 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900 relative"
         >
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h3 className="text-4xl sm:text-5xl font-extrabold mb-4 whitespace-nowrap">
-                <span className="text-white">University&nbsp;of&nbsp;Illinois,</span>
-                <span className="text-blue-400">&nbsp;Urbana</span>
+            {/* Header */}
+            <div className="text-center mb-14">
+              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3">
+                <span className="text-white">University of Illinois,</span>{" "}
+                <span className="text-blue-400">Urbana</span>
                 <span className="text-orange-400">-Champaign</span>
               </h3>
-              <div className="text-3xl text-blue-100 font-semibold mb-12">Expected Graduation Date: {education.grad.replace('Expected Graduation: ', '')}</div>
+              <div className="inline-flex items-center gap-2 text-base sm:text-lg text-blue-200 font-medium bg-white/5 border border-white/10 rounded-full px-5 py-2">
+                <span className="text-blue-400">🎓</span>
+                Expected Graduation · {education.grad.replace('Expected Graduation: ', '')}
+              </div>
             </div>
-            
-            <div className="w-full grid grid-cols-1 lg:grid-cols-[250px_1fr_250px] gap-8 lg:gap-16 items-start">
-              {/* Left: Major/Minor/GPA */}
-              <div className="flex flex-col justify-between h-full min-h-[800px] items-center lg:items-start text-center lg:text-left">
-                <div>
-                  <div className="text-blue-400 text-3xl font-bold mb-2">Major</div>
-                  <div className="text-4xl sm:text-5xl font-extrabold text-white">{education.major}</div>
-                </div>
-                <div>
-                  <div className="text-blue-400 text-3xl font-bold mb-2">Minor</div>
-                  <div className="text-4xl sm:text-5xl font-extrabold text-white">{education.minor}</div>
-                </div>
-                <div>
-                  <div className="text-blue-400 text-3xl font-bold mb-2">GPA</div>
-                  <div className="text-4xl sm:text-5xl font-extrabold text-white">{education.gpa}</div>
-                </div>
+
+            {/* Carousel · Major/Minor/GPA · Relevant Coursework — all equal height */}
+            <div className="grid lg:grid-cols-[1.25fr_0.65fr_1.2fr] gap-6 lg:gap-8 items-stretch">
+              {/* Carousel */}
+              <div className="h-full">
+                <EducationCarousel />
               </div>
-              
-              {/* Center: Alma Mater Statue Image */}
-              <div className="flex justify-center items-center">
-                <Image
-                  src="/untitled folder 2/almamaterstatue.jpeg"
-                  alt="UIUC Alma Mater Statue"
-                  width={750}
-                  height={800}
-                  className="rounded-2xl shadow-2xl object-cover w-[750px] h-[800px]"
-                />
+
+              {/* Major / Minor / GPA */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-4 h-full">
+                {[
+                  { label: "Major", value: education.major },
+                  { label: "Minor", value: education.minor },
+                  { label: "GPA", value: education.gpa },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur-sm hover:bg-white/10 transition-colors flex flex-col justify-center lg:flex-1"
+                  >
+                    <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                      {item.label}
+                    </div>
+                    <div className="text-xl font-bold text-white leading-snug">{item.value}</div>
+                  </div>
+                ))}
               </div>
-              
-              {/* Right: Coursework */}
-              <div className="flex flex-col items-start text-left max-w-xl w-full space-y-8">
-                <h4 className="text-4xl sm:text-5xl font-extrabold text-blue-200 mb-8">Relevant Coursework</h4>
-                <div className="flex flex-col gap-6 w-full">
-                <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                  Intro to Algorithims & Models of Comp
-                  </span>
-                  <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Data Structures and Algorithms (C++)
-                  </span>
-                  <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Computer Architecture <br />(C++)
-                  </span>
-                  <span className="bg-blue-800/60 text-blue-100 px-8 py-4 rounded-full text-xl sm:text-2xl font-bold shadow-sm border border-blue-400/20 w-full block text-left">
-                    Database Systems <br />(SQL)
-                  </span>
-            
+
+              {/* Relevant Coursework — expandable cards */}
+              <div>
+                <h4 className="text-2xl sm:text-3xl font-bold text-white mb-2">Relevant Coursework</h4>
+                <p className="text-blue-200/70 mb-5 text-sm">Tap a course to see what I learned and the tools I used.</p>
+                <div className="space-y-3">
+                  {courses.map((course) => (
+                    <CourseCard key={course.code} course={course} />
+                  ))}
                 </div>
               </div>
             </div>
@@ -999,26 +1121,35 @@ export default function Portfolio() {
               >
                 <div className={`w-full max-w-lg ${index % 2 === 0 ? "pr-2" : "pl-2"}`}>
                   <Card className="p-6 shadow-xl hover:shadow-2xl transition-all duration-500 border-0 bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-105">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">
-                          {exp.title.includes('<br') ? (
-                            <span dangerouslySetInnerHTML={{ __html: exp.title }} />
-                          ) : (
-                            exp.title
-                          )}
-                        </h3>
-                        <p className="text-blue-400 font-semibold">{exp.company}</p>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Image
+                          src={exp.logo}
+                          alt={`${exp.company} logo`}
+                          width={64}
+                          height={64}
+                          className="w-14 h-14 rounded-xl bg-white object-contain object-center p-1.5 shrink-0 border border-white/20 shadow-sm"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="text-xl font-bold text-white leading-tight">
+                            {exp.title.includes('<br') ? (
+                              <span dangerouslySetInnerHTML={{ __html: exp.title }} />
+                            ) : (
+                              exp.title
+                            )}
+                          </h3>
+                          <p className="text-blue-400 font-semibold">{exp.company}</p>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end text-right text-sm text-blue-200 min-w-[140px] ml-4 gap-1 pt-1">
-                        <div className="flex items-center whitespace-nowrap">
-                          <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
-                          <span>{exp.period}</span>
-                        </div>
-                        <div className="flex items-center whitespace-nowrap">
-                          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                          <span>{exp.location}</span>
-                        </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-blue-200">
+                        <span className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                          {exp.period}
+                        </span>
+                        <span className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                          {exp.location}
+                        </span>
                       </div>
                     </div>
                     {/* Description */}
@@ -1516,7 +1647,7 @@ export default function Portfolio() {
 
           <div className="border-t border-slate-800 pt-8 text-center">
             <p className="text-blue-200">
-              © 2025 Sriram Natarajan. All rights reserved. Built with Next.js and deployed on Vercel.
+              © 2026 Sriram Natarajan. All rights reserved. Built with Next.js and deployed on Vercel.
             </p>
           </div>
         </div>
