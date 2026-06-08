@@ -557,8 +557,13 @@ export default function IntroSplash() {
       geom.current = newGeom;
 
       // Position the (clickable) Wikipedia label over the revealed constellation —
-      // shown when one is clicked open OR while it's being dragged.
-      const act = activeRef.current >= 0 ? activeRef.current : dragIndexRef.current;
+      // shown on hover, while dragging, or when clicked open.
+      const act =
+        activeRef.current >= 0
+          ? activeRef.current
+          : dragIndexRef.current >= 0
+            ? dragIndexRef.current
+            : hover;
       const labelEl = labelRef.current;
       if (labelEl) {
         if (act >= 0 && newGeom[act]) {
