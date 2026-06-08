@@ -827,7 +827,7 @@ export default function Portfolio() {
 
       {/* Navigation */}
       <nav className={`fixed top-0 w-full bg-slate-900/90 backdrop-blur-xl z-50 border-b border-blue-500/20 shadow-lg transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-6 sm:px-8 lg:px-12">
           <div className="flex justify-between items-center py-4">
             <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">
               Sriram Natarajan
