@@ -247,7 +247,7 @@ export default function IntroSplash() {
 
   // Per-frame screen geometry for each constellation (for hit-testing clicks),
   // plus which one is currently revealed / hovered.
-  const geom = useRef<{ cx: number; cy: number; minX: number; minY: number; maxX: number; maxY: number }[]>([]);
+  const geom = useRef<{ cx: number; cy: number; minX: number; minY: number; maxX: number; maxY: number; pts: { x: number; y: number }[] }[]>([]);
   const activeRef = useRef<number>(-1);
   const dragIndexRef = useRef<number>(-1);
 
@@ -311,17 +311,31 @@ export default function IntroSplash() {
     // Per-constellation, per-star twinkle phases.
     const phases = CONSTELLATIONS.map((c) => c.stars.map(() => Math.random() * Math.PI * 2));
 
+    // Distance from a point to a line segment (a→b).
+    const distToSeg = (px: number, py: number, a: { x: number; y: number }, b: { x: number; y: number }) => {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len2 = dx * dx + dy * dy;
+      let t = len2 ? ((px - a.x) * dx + (py - a.y) * dy) / len2 : 0;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy));
+    };
+
+    // A constellation is "hit" only when the click is close to one of its stars
+    // or connecting lines — not anywhere inside its bounding box.
+    const THRESHOLD = 16;
     const hitTest = (px: number, py: number) => {
       let best = -1;
-      let bestD = Infinity;
+      let bestD = THRESHOLD;
       geom.current.forEach((g, i) => {
-        const pad = 24;
-        if (px >= g.minX - pad && px <= g.maxX + pad && py >= g.minY - pad && py <= g.maxY + pad) {
-          const d = Math.hypot(px - g.cx, py - g.cy);
-          if (d < bestD) {
-            bestD = d;
-            best = i;
-          }
+        // Quick reject with a small margin before the precise check.
+        if (px < g.minX - THRESHOLD || px > g.maxX + THRESHOLD || py < g.minY - THRESHOLD || py > g.maxY + THRESHOLD) return;
+        let d = Infinity;
+        for (const p of g.pts) d = Math.min(d, Math.hypot(px - p.x, py - p.y));
+        for (const [a, b] of placed[i].lines) d = Math.min(d, distToSeg(px, py, g.pts[a], g.pts[b]));
+        if (d < bestD) {
+          bestD = d;
+          best = i;
         }
       });
       return best;
@@ -343,6 +357,13 @@ export default function IntroSplash() {
         ny: Math.min(1, Math.max(0, py / rect.height)),
       };
       if (drag.index >= 0) {
+        // Safety net: if the mouse button isn't actually held (e.g. the mouseup
+        // was missed because focus moved to a new tab), stop dragging.
+        if (e.buttons === 0) {
+          drag.index = -1;
+          dragIndexRef.current = -1;
+          return;
+        }
         const dx = px - drag.startX;
         const dy = py - drag.startY;
         if (Math.hypot(dx, dy) > 4) drag.moved = true;
@@ -503,10 +524,14 @@ export default function IntroSplash() {
         }
         const cenX = sumX / pts.length;
         const cenY = sumY / pts.length;
-        newGeom[ci] = { cx: cenX, cy: cenY, minX, minY, maxX, maxY };
+        newGeom[ci] = { cx: cenX, cy: cenY, minX, minY, maxX, maxY, pts };
 
-        const pad = 24;
-        if (mx >= minX - pad && mx <= maxX + pad && my >= minY - pad && my <= maxY + pad) hover = ci;
+        if (mx >= minX - 16 && mx <= maxX + 16 && my >= minY - 16 && my <= maxY + 16) {
+          let d = Infinity;
+          for (const p of pts) d = Math.min(d, Math.hypot(mx - p.x, my - p.y));
+          for (const [a, b] of c.lines) d = Math.min(d, distToSeg(mx, my, pts[a], pts[b]));
+          if (d < 16) hover = ci;
+        }
         const isHot = activeRef.current === ci || hover === ci || dragging;
 
         ctx.lineWidth = isHot ? 3 : 2;
