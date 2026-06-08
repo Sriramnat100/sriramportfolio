@@ -275,22 +275,35 @@ export default function IntroSplash() {
     };
     resize();
 
-    // Faint, static background starfield (normalized positions → free on resize).
-    const field = Array.from({ length: 120 }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      r: 0.6 + Math.random() * 0.9,
-      phase: Math.random() * Math.PI * 2,
-    }));
+    // Static background starfield (normalized positions → free on resize).
+    // ~12% are bigger "bright" stars that get a soft glow halo.
+    const field = Array.from({ length: 220 }, () => {
+      const bright = Math.random() < 0.12;
+      return {
+        x: Math.random(),
+        y: Math.random(),
+        r: bright ? 1.4 + Math.random() * 1.6 : 0.5 + Math.random() * 0.9,
+        phase: Math.random() * Math.PI * 2,
+        bright,
+      };
+    });
 
     // Drifting "star" particles that repel from the cursor (the ones you liked).
-    const pCount = Math.max(70, Math.min(130, Math.floor((w * h) / 14000)));
+    const pCount = Math.max(90, Math.min(160, Math.floor((w * h) / 11000)));
     const parts = Array.from({ length: pCount }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
     }));
+
+    // Shooting stars (meteors): one big sweep across the name on entry, then
+    // occasional ambient ones. Each is a line from (x0,y0) → (x1,y1) over `dur`.
+    type Shoot = { x0: number; y0: number; x1: number; y1: number; start: number; dur: number; width: number; tail: number };
+    const shoots: Shoot[] = [];
+    const bootTime = performance.now();
+    shoots.push({ x0: -0.12 * w, y0: 0.24 * h, x1: 1.18 * w, y1: 0.62 * h, start: bootTime + 650, dur: 1500, width: 4.5, tail: 280 });
+    let nextAmbient = bootTime + 4500 + Math.random() * 4000;
 
     // Give each constellation a per-load home jitter + a slow wandering drift,
     // so the sky is never laid out the same way twice and is always moving.
@@ -447,12 +460,23 @@ export default function IntroSplash() {
       ctx.arc(mx, my, sr, 0, Math.PI * 2);
       ctx.fill();
 
-      // Faint static starfield.
+      // Static starfield (additive, so it glows). Bright stars get a halo.
       for (const s of field) {
         const tw = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * 1.5 + s.phase));
+        const sx = s.x * w;
+        const sy = s.y * h;
+        if (s.bright) {
+          const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, s.r * 4.5);
+          halo.addColorStop(0, `rgba(190,224,255,${0.55 * tw})`);
+          halo.addColorStop(1, "rgba(190,224,255,0)");
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(sx, sy, s.r * 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.beginPath();
-        ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,222,255,${0.32 * tw})`;
+        ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(212,230,255,${(s.bright ? 0.95 : 0.42) * tw})`;
         ctx.fill();
       }
       ctx.globalCompositeOperation = "source-over";
@@ -471,9 +495,14 @@ export default function IntroSplash() {
           p.x += (dxm / dm) * f * 1.2;
           p.y += (dym / dm) * f * 1.2;
         }
+        // Soft glow halo + bright core.
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(186,230,253,0.7)";
+        ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(140,200,255,0.10)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(205,236,255,0.9)";
         ctx.fill();
       }
       for (let i = 0; i < parts.length; i++) {
@@ -585,6 +614,61 @@ export default function IntroSplash() {
 
       section.style.cursor =
         dragIndexRef.current >= 0 ? "grabbing" : hover >= 0 ? "grab" : "default";
+
+      // Shooting stars (drawn additively, on top, so they glow).
+      const nowMs = performance.now();
+      if (nowMs > nextAmbient) {
+        const goRight = Math.random() < 0.5;
+        const y0 = Math.random() * 0.5 * h;
+        shoots.push({
+          x0: goRight ? -0.1 * w : 1.1 * w,
+          y0,
+          x1: goRight ? 1.1 * w : -0.1 * w,
+          y1: y0 + (0.18 + Math.random() * 0.22) * h,
+          start: nowMs,
+          dur: 1100 + Math.random() * 700,
+          width: 2 + Math.random() * 1.6,
+          tail: 150 + Math.random() * 90,
+        });
+        nextAmbient = nowMs + 5000 + Math.random() * 6000;
+      }
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
+      for (let i = shoots.length - 1; i >= 0; i--) {
+        const s = shoots[i];
+        const tt = (nowMs - s.start) / s.dur;
+        if (tt < 0) continue;
+        if (tt >= 1) {
+          shoots.splice(i, 1);
+          continue;
+        }
+        const hx = lerp(s.x0, s.x1, tt);
+        const hy = lerp(s.y0, s.y1, tt);
+        const dx = s.x1 - s.x0;
+        const dy = s.y1 - s.y0;
+        const len = Math.hypot(dx, dy) || 1;
+        const tx = hx - (dx / len) * s.tail;
+        const ty = hy - (dy / len) * s.tail;
+        const alpha = tt < 0.15 ? tt / 0.15 : tt > 0.75 ? (1 - tt) / 0.25 : 1;
+        const grad = ctx.createLinearGradient(tx, ty, hx, hy);
+        grad.addColorStop(0, "rgba(125,211,252,0)");
+        grad.addColorStop(0.7, `rgba(160,224,255,${0.5 * alpha})`);
+        grad.addColorStop(1, `rgba(255,255,255,${0.95 * alpha})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = s.width;
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(hx, hy);
+        ctx.stroke();
+        const head = ctx.createRadialGradient(hx, hy, 0, hx, hy, s.width * 4);
+        head.addColorStop(0, `rgba(255,255,255,${0.95 * alpha})`);
+        head.addColorStop(1, "rgba(125,211,252,0)");
+        ctx.fillStyle = head;
+        ctx.beginPath();
+        ctx.arc(hx, hy, s.width * 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = "source-over";
 
       if (tiltRef.current) {
         tiltRef.current.style.transform = `perspective(900px) rotateX(${-oy * 6}deg) rotateY(${ox * 8}deg)`;
