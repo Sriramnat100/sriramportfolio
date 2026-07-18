@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
-import type { FeatureCollection, Geometry, MultiPolygon, Polygon } from "geojson";
+import type { FeatureCollection, Geometry } from "geojson";
+import { geoOrthographic, geoPath, geoGraticule10, geoDistance } from "d3-geo";
 import { MapPin } from "lucide-react";
 
 const supabase = createClient(
@@ -22,19 +23,9 @@ type Ping = {
   created_at: string;
 };
 
-// Only record one ping per browser per 24h so reloads don't spam the map.
+// Only record one ping per browser per 24h so reloads don't spam the globe.
 const PING_KEY = "visitor_ping_at";
 const PING_TTL_MS = 24 * 60 * 60 * 1000;
-
-// Equirectangular projection into a 2:1 box, with unused polar latitudes
-// cropped (nothing interesting above 84°N / below 60°S on a visitor map).
-const LAT_TOP = 84;
-const LAT_BOTTOM = -60;
-function project(lat: number, lon: number) {
-  const x = (lon + 180) / 360;
-  const y = (LAT_TOP - lat) / (LAT_TOP - LAT_BOTTOM);
-  return { x, y };
-}
 
 async function lookupGeo(): Promise<Omit<Ping, "id" | "created_at"> | null> {
   // Primary: ipwho.is (free, CORS-enabled). Fallback: ipapi.co.
@@ -68,11 +59,18 @@ async function lookupGeo(): Promise<Omit<Ping, "id" | "created_at"> | null> {
 }
 
 export default function VisitorMap() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pings, setPings] = useState<Ping[]>([]);
   const [you, setYou] = useState<Ping | null>(null);
-  const [hovered, setHovered] = useState<Ping | null>(null);
+  const [hovered, setHovered] = useState<{ ping: Ping; x: number; y: number } | null>(null);
+  const [land, setLand] = useState<FeatureCollection<Geometry> | null>(null);
+
+  // Refs so the render loop always sees fresh data without re-running effects.
+  const pingsRef = useRef<Ping[]>([]);
+  const youIdRef = useRef<string | null>(null);
+  pingsRef.current = pings;
+  youIdRef.current = you?.id ?? null;
 
   // Record this visit (once per day per browser), then load recent pings.
   useEffect(() => {
@@ -108,78 +106,233 @@ export default function VisitorMap() {
     };
   }, []);
 
-  // Draw the world landmass silhouette once the topojson loads.
+  // Load the landmass topojson once.
   useEffect(() => {
     let cancelled = false;
-
-    const draw = async () => {
-      const canvas = canvasRef.current;
-      const wrap = wrapRef.current;
-      if (!canvas || !wrap) return;
-
-      const res = await fetch("/map/land-110m.json");
-      const topo = (await res.json()) as Topology;
-      if (cancelled) return;
-
-      const land = feature(
-        topo,
-        topo.objects.land
-      ) as unknown as FeatureCollection<Geometry>;
-
-      const render = () => {
-        const w = wrap.clientWidth;
-        const h = w / 2.2; // slightly wider than 2:1 since we cropped the poles
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-        canvas.style.height = `${h}px`;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, w, h);
-
-        ctx.fillStyle = "rgba(148, 197, 253, 0.16)";
-        ctx.strokeStyle = "rgba(148, 197, 253, 0.28)";
-        ctx.lineWidth = 0.6;
-
-        const drawRing = (ring: number[][]) => {
-          let prevLon = ring[0]?.[0] ?? 0;
-          ring.forEach(([lon, lat], i) => {
-            const { x, y } = project(lat, lon);
-            // Break the path when a ring wraps across the antimeridian
-            // (e.g. Chukotka, Fiji) — otherwise it strokes a horizontal
-            // line across the whole map.
-            if (i === 0 || Math.abs(lon - prevLon) > 180) ctx.moveTo(x * w, y * h);
-            else ctx.lineTo(x * w, y * h);
-            prevLon = lon;
-          });
-        };
-
-        for (const f of land.features) {
-          const geom = f.geometry as Polygon | MultiPolygon;
-          ctx.beginPath();
-          if (geom.type === "Polygon") {
-            for (const ring of geom.coordinates) drawRing(ring);
-          } else {
-            for (const poly of geom.coordinates) for (const ring of poly) drawRing(ring);
-          }
-          ctx.fill();
-          ctx.stroke();
+    fetch("/map/land-110m.json")
+      .then((r) => r.json())
+      .then((topo: Topology) => {
+        if (!cancelled) {
+          setLand(
+            feature(topo, topo.objects.land) as unknown as FeatureCollection<Geometry>
+          );
         }
-      };
-
-      render();
-      const onResize = () => render();
-      window.addEventListener("resize", onResize);
-      return () => window.removeEventListener("resize", onResize);
-    };
-
-    const cleanup = draw();
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
-      cleanup.then((fn) => fn?.());
     };
   }, []);
+
+  // The globe: orthographic projection, auto-rotates, drag to spin.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap || !land) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const graticule = geoGraticule10();
+
+    // Start centered on the Americas; most early pins will be US.
+    const rot = { lambda: 100, phi: -22 };
+    const drag = { active: false, x: 0, y: 0, moved: false };
+    let lastInteract = 0;
+
+    // Screen positions of visible pins, refreshed every frame (for hover hit-testing).
+    let projected: { x: number; y: number; ping: Ping }[] = [];
+
+    let size = 0;
+    let dpr = 1;
+    const measure = () => {
+      size = Math.min(wrap.clientWidth - 16, 580);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
+    };
+    measure();
+    window.addEventListener("resize", measure);
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf = 0;
+    const render = () => {
+      const t = performance.now() / 1000;
+
+      // Gentle auto-spin, pausing briefly after the user interacts.
+      if (!reduceMotion && !drag.active && performance.now() - lastInteract > 2500) {
+        rot.lambda += 0.08;
+      }
+
+      const R = size / 2 - 14;
+      const cx = size / 2;
+      const projection = geoOrthographic()
+        .translate([cx, cx])
+        .scale(R)
+        .rotate([rot.lambda, rot.phi])
+        .clipAngle(90);
+      const path = geoPath(projection, ctx);
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+
+      // Atmosphere halo
+      const halo = ctx.createRadialGradient(cx, cx, R * 0.85, cx, cx, R * 1.18);
+      halo.addColorStop(0, "rgba(56,189,248,0)");
+      halo.addColorStop(0.72, "rgba(56,189,248,0.16)");
+      halo.addColorStop(1, "rgba(56,189,248,0)");
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cx, R * 1.18, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ocean sphere with top-left light
+      const ocean = ctx.createRadialGradient(
+        cx - R * 0.35, cx - R * 0.4, R * 0.1,
+        cx, cx, R
+      );
+      ocean.addColorStop(0, "#1b3a6b");
+      ocean.addColorStop(0.55, "#122a52");
+      ocean.addColorStop(1, "#0a1830");
+      ctx.beginPath();
+      path({ type: "Sphere" });
+      ctx.fillStyle = ocean;
+      ctx.fill();
+
+      // Graticule
+      ctx.beginPath();
+      path(graticule);
+      ctx.strokeStyle = "rgba(148,197,253,0.10)";
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // Land
+      ctx.beginPath();
+      path(land);
+      ctx.fillStyle = "rgba(125,177,255,0.28)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(164,204,255,0.45)";
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Limb (edge) highlight
+      ctx.beginPath();
+      path({ type: "Sphere" });
+      ctx.strokeStyle = "rgba(125,211,252,0.55)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Pins — only on the visible hemisphere.
+      const center: [number, number] = [-rot.lambda, -rot.phi];
+      projected = [];
+      for (const p of pingsRef.current) {
+        if (geoDistance([p.lon, p.lat], center) > Math.PI / 2 - 0.06) continue;
+        const pt = projection([p.lon, p.lat]);
+        if (!pt) continue;
+        const [x, y] = pt;
+        projected.push({ x, y, ping: p });
+        const isYou = youIdRef.current === p.id;
+        if (isYou) {
+          const pulse = reduceMotion ? 0 : (t * 0.9) % 1;
+          ctx.beginPath();
+          ctx.arc(x, y, 6 + pulse * 14, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(251,146,60,${0.55 * (1 - pulse)})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(x, y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = "#fb923c";
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(x, y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "#fff7ed";
+          ctx.fill();
+        } else {
+          const glow = ctx.createRadialGradient(x, y, 0, x, y, 7);
+          glow.addColorStop(0, "rgba(103,232,249,0.9)");
+          glow.addColorStop(1, "rgba(103,232,249,0)");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(x, y, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(x, y, 2.6, 0, Math.PI * 2);
+          ctx.fillStyle = "#a5f3fc";
+          ctx.fill();
+        }
+      }
+
+      raf = requestAnimationFrame(render);
+    };
+    raf = requestAnimationFrame(render);
+
+    // Drag to spin (pointer events cover mouse + touch).
+    const onDown = (e: PointerEvent) => {
+      drag.active = true;
+      drag.moved = false;
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch {}
+    };
+    const onMove = (e: PointerEvent) => {
+      if (drag.active) {
+        const dx = e.clientX - drag.x;
+        const dy = e.clientY - drag.y;
+        if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
+        drag.x = e.clientX;
+        drag.y = e.clientY;
+        rot.lambda += dx * 0.35;
+        rot.phi = Math.max(-75, Math.min(75, rot.phi - dy * 0.35));
+        lastInteract = performance.now();
+        setHovered(null);
+        return;
+      }
+      // Hover hit-test against this frame's projected pins.
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      let best: { x: number; y: number; ping: Ping } | null = null;
+      let bestD = 12;
+      for (const pp of projected) {
+        const d = Math.hypot(mx - pp.x, my - pp.y);
+        if (d < bestD) {
+          bestD = d;
+          best = pp;
+        }
+      }
+      setHovered((prev) => {
+        if (!best) return prev ? null : prev;
+        if (prev && prev.ping.id === best.ping.id) return prev;
+        lastInteract = performance.now();
+        return { ping: best.ping, x: best.x, y: best.y };
+      });
+    };
+    const onUp = () => {
+      drag.active = false;
+      lastInteract = performance.now();
+    };
+    const onLeave = () => setHovered(null);
+
+    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onMove);
+    canvas.addEventListener("pointerup", onUp);
+    canvas.addEventListener("pointercancel", onUp);
+    canvas.addEventListener("pointerleave", onLeave);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointerup", onUp);
+      canvas.removeEventListener("pointercancel", onUp);
+      canvas.removeEventListener("pointerleave", onLeave);
+    };
+  }, [land]);
 
   const uniqueCountries = new Set(
     pings.map((p) => p.country_code).filter(Boolean)
@@ -189,48 +342,35 @@ export default function VisitorMap() {
     <div>
       <div
         ref={wrapRef}
-        className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-slate-950/60 p-0 shadow-2xl"
+        className="relative flex w-full items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-slate-950/60 py-8 shadow-2xl"
       >
-        <canvas ref={canvasRef} className="block w-full" />
+        {/* Faint starfield behind the globe */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-70"
+          style={{
+            backgroundImage:
+              "radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.5) 50%, transparent 51%), radial-gradient(1px 1px at 78% 14%, rgba(255,255,255,0.4) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 88% 66%, rgba(255,255,255,0.45) 50%, transparent 51%), radial-gradient(1px 1px at 30% 80%, rgba(255,255,255,0.35) 50%, transparent 51%), radial-gradient(1px 1px at 55% 40%, rgba(255,255,255,0.3) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 8% 60%, rgba(255,255,255,0.4) 50%, transparent 51%), radial-gradient(1px 1px at 65% 88%, rgba(255,255,255,0.4) 50%, transparent 51%), radial-gradient(1px 1px at 42% 8%, rgba(255,255,255,0.45) 50%, transparent 51%)",
+          }}
+        />
 
-        {/* Pins (absolutely positioned over the canvas) */}
-        {pings.map((p) => {
-          const { x, y } = project(p.lat, p.lon);
-          if (y < 0 || y > 1) return null;
-          const isYou = you?.id === p.id;
-          return (
-            <button
-              key={p.id}
-              onMouseEnter={() => setHovered(p)}
-              onMouseLeave={() => setHovered((h) => (h?.id === p.id ? null : h))}
-              className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
-              aria-label={`Visitor from ${p.city ?? "somewhere"}, ${p.country ?? ""}`}
-            >
-              {isYou ? (
-                <span className="relative flex h-4 w-4">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-60" />
-                  <span className="relative inline-flex h-4 w-4 rounded-full bg-orange-400 ring-2 ring-orange-200/60" />
-                </span>
-              ) : (
-                <span className="block h-2 w-2 rounded-full bg-cyan-300/90 shadow-[0_0_8px_rgba(103,232,249,0.9)] transition-transform hover:scale-150" />
-              )}
-            </button>
-          );
-        })}
+        <canvas
+          ref={canvasRef}
+          className="relative cursor-grab touch-pan-y active:cursor-grabbing"
+        />
 
         {/* Hover tooltip */}
         {hovered && (
           <div
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[130%] whitespace-nowrap rounded-lg border border-cyan-300/40 bg-slate-900/95 px-3 py-1.5 text-xs font-medium text-cyan-100 shadow-xl"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-[150%] whitespace-nowrap rounded-lg border border-cyan-300/40 bg-slate-900/95 px-3 py-1.5 text-xs font-medium text-cyan-100 shadow-xl"
             style={{
-              left: `${project(hovered.lat, hovered.lon).x * 100}%`,
-              top: `${project(hovered.lat, hovered.lon).y * 100}%`,
+              left: `calc(50% - ${(canvasRef.current?.clientWidth ?? 0) / 2 - hovered.x}px)`,
+              top: `calc(50% - ${(canvasRef.current?.clientHeight ?? 0) / 2 - hovered.y}px)`,
             }}
           >
-            {[hovered.city, hovered.country].filter(Boolean).join(", ") || "Somewhere on Earth"}
+            {[hovered.ping.city, hovered.ping.country].filter(Boolean).join(", ") ||
+              "Somewhere on Earth"}
             <span className="ml-2 text-cyan-300/60">
-              {new Date(hovered.created_at).toLocaleDateString(undefined, {
+              {new Date(hovered.ping.created_at).toLocaleDateString(undefined, {
                 month: "short",
                 day: "numeric",
               })}
@@ -251,7 +391,7 @@ export default function VisitorMap() {
               </span>
             </span>
           ) : (
-            <span>Every visitor drops a pin — cyan dots are past visitors.</span>
+            <span>Drag the globe — cyan dots are past visitors, orange is you.</span>
           )}
         </div>
         <div className="text-sm text-blue-300/70">
