@@ -42,6 +42,9 @@ import Image from "next/image"
 import Link from "next/link"
 import IntroSplash from "@/components/IntroSplash"
 import EducationCarousel from "@/components/EducationCarousel"
+import VinylPlayer from "@/components/VinylPlayer"
+import VisitorMap from "@/components/VisitorMap"
+import Rolodex from "@/components/Rolodex"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@supabase/supabase-js"
 
@@ -833,7 +836,7 @@ export default function Portfolio() {
               Sriram Natarajan
             </div>
             <div className="hidden md:flex space-x-8">
-              {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Contact"].map((item) => (
+              {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Music", "Contact"].map((item) => (
                 item === "About" ? (
                   <a
                     key={item}
@@ -1507,6 +1510,23 @@ export default function Portfolio() {
         </div>
       </section>
 
+      {/* Music Section — vinyl player with my own recordings */}
+      <section
+        id="music"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-white mb-6">Off the Record</h2>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Yes, I also make music. Drop the needle — these are tracks I recorded myself.
+            </p>
+          </div>
+
+          <VinylPlayer />
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section
         id="contact"
@@ -1531,43 +1551,8 @@ export default function Portfolio() {
                 </p>
               </div>
 
-              <div className="space-y-6">
-                {[
-                  {
-                    icon: Mail,
-                    label: "Email",
-                    value: "sriram6@illinois.edu",
-                    href: "mailto:sriram.natarajan@email.com",
-                  },
-                  {
-                    icon: Linkedin,
-                    label: "LinkedIn",
-                    value: "linkedin.com/in/sriramnat",
-                    href: "https://linkedin.com/in/sriramnat",
-                  },
-                  {
-                    icon: Github,
-                    label: "GitHub",
-                    value: "github.com/Sriramnat100",
-                    href: "https://github.com/Sriramnat100",
-                  },
-                ].map((contact, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-shadow border border-white/20"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mr-4">
-                      <contact.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{contact.label}</div>
-                      <Link href={contact.href} className="text-blue-400 hover:text-blue-300 transition-colors">
-                        {contact.value}
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* Rolodex — flip through contact cards */}
+              <Rolodex />
 
               <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 p-6 rounded-xl border border-blue-400/30 backdrop-blur-sm">
                 <h4 className="font-bold text-white mb-2">Quick Response Guarantee</h4>
@@ -1589,6 +1574,23 @@ export default function Portfolio() {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Visitor Map — every visitor drops a pin */}
+      <section
+        id="visitors"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900"
+      >
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-5xl font-bold text-white mb-6">You Were Here</h2>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Everyone who visits this site leaves a mark. Here&apos;s where the last few hundred visitors pinged in from.
+            </p>
+          </div>
+
+          <VisitorMap />
         </div>
       </section>
 
