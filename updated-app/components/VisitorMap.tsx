@@ -143,10 +143,15 @@ export default function VisitorMap() {
         ctx.lineWidth = 0.6;
 
         const drawRing = (ring: number[][]) => {
+          let prevLon = ring[0]?.[0] ?? 0;
           ring.forEach(([lon, lat], i) => {
             const { x, y } = project(lat, lon);
-            if (i === 0) ctx.moveTo(x * w, y * h);
+            // Break the path when a ring wraps across the antimeridian
+            // (e.g. Chukotka, Fiji) — otherwise it strokes a horizontal
+            // line across the whole map.
+            if (i === 0 || Math.abs(lon - prevLon) > 180) ctx.moveTo(x * w, y * h);
             else ctx.lineTo(x * w, y * h);
+            prevLon = lon;
           });
         };
 
@@ -158,7 +163,6 @@ export default function VisitorMap() {
           } else {
             for (const poly of geom.coordinates) for (const ring of poly) drawRing(ring);
           }
-          ctx.closePath();
           ctx.fill();
           ctx.stroke();
         }
