@@ -6,7 +6,7 @@ import { feature } from "topojson-client";
 import type { Topology } from "topojson-specification";
 import type { FeatureCollection, Geometry } from "geojson";
 import { geoOrthographic, geoPath, geoGraticule10, geoDistance } from "d3-geo";
-import { MapPin } from "lucide-react";
+import { LocateFixed, MapPin } from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +25,27 @@ type Ping = {
 
 // Only record one ping per browser per 24h so reloads don't spam the globe.
 const PING_KEY = "visitor_ping_at";
+const PING_ID_KEY = "visitor_ping_id";
+const PING_PRECISE_KEY = "visitor_ping_precise";
 const PING_TTL_MS = 24 * 60 * 60 * 1000;
+
+// City/country lookup for precise coordinates (free, no key, CORS-enabled).
+async function reverseGeocode(lat: number, lon: number) {
+  try {
+    const r = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+    );
+    const d = await r.json();
+    return {
+      city: (d.city || d.locality || null) as string | null,
+      // bigdatacloud formats some names like "United States of America (the)"
+      country: (d.countryName?.replace(/ \(the\)$/, "") || null) as string | null,
+      country_code: (d.countryCode || null) as string | null,
+    };
+  } catch {
+    return {};
+  }
+}
 
 async function lookupGeo(): Promise<Omit<Ping, "id" | "created_at"> | null> {
   // Primary: ipwho.is (free, CORS-enabled). Fallback: ipapi.co.
@@ -65,6 +85,9 @@ export default function VisitorMap() {
   const [you, setYou] = useState<Ping | null>(null);
   const [hovered, setHovered] = useState<{ ping: Ping; x: number; y: number } | null>(null);
   const [land, setLand] = useState<FeatureCollection<Geometry> | null>(null);
+  const [precise, setPrecise] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
 
   // Refs so the render loop always sees fresh data without re-running effects.
   const pingsRef = useRef<Ping[]>([]);
@@ -72,12 +95,26 @@ export default function VisitorMap() {
   pingsRef.current = pings;
   youIdRef.current = you?.id ?? null;
 
+  // Zoom state shared between the render loop and the +/- buttons.
+  // `target` is what controls set; `zoom` eases toward it each frame.
+  const viewRef = useRef({ zoom: 1, target: 1 });
+  // Higher-detail coastlines (land-50m), lazy-loaded on first zoom-in.
+  const hiLandRef = useRef<FeatureCollection<Geometry> | null>(null);
+  const hiLandRequested = useRef(false);
+
+  const MAX_ZOOM = 14;
+  const zoomBy = (factor: number) => {
+    const v = viewRef.current;
+    v.target = Math.max(1, Math.min(MAX_ZOOM, v.target * factor));
+  };
+
   // Record this visit (once per day per browser), then load recent pings.
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
+        setPrecise(localStorage.getItem(PING_PRECISE_KEY) === "1");
         const last = Number(localStorage.getItem(PING_KEY) || 0);
         if (Date.now() - last > PING_TTL_MS) {
           const geo = await lookupGeo();
@@ -87,6 +124,21 @@ export default function VisitorMap() {
               .from("visitor_pings")
               .insert(geo)
               .select()
+              .single();
+            if (data && !cancelled) {
+              setYou(data as Ping);
+              localStorage.setItem(PING_ID_KEY, (data as Ping).id);
+            }
+          }
+        } else {
+          // Already pinged recently — re-adopt that pin so it still pulses
+          // orange and can be upgraded to a precise location.
+          const id = localStorage.getItem(PING_ID_KEY);
+          if (id) {
+            const { data } = await supabase
+              .from("visitor_pings")
+              .select("*")
+              .eq("id", id)
               .single();
             if (data && !cancelled) setYou(data as Ping);
           }
@@ -137,6 +189,30 @@ export default function VisitorMap() {
     const rot = { lambda: 100, phi: -22 };
     const drag = { active: false, x: 0, y: 0, moved: false };
     let lastInteract = 0;
+    const view = viewRef.current;
+
+    // Active pointers (for pinch-zoom) keyed by pointerId.
+    const pointers = new Map<number, { x: number; y: number }>();
+    let pinch: { d0: number; z0: number } | null = null;
+
+    const clampPhi = (p: number) => Math.max(-80, Math.min(80, p));
+
+    // Fetch the 50m coastlines once the user starts zooming in.
+    const requestHiLand = () => {
+      if (hiLandRequested.current) return;
+      hiLandRequested.current = true;
+      fetch("/map/land-50m.json")
+        .then((r) => r.json())
+        .then((topo: Topology) => {
+          hiLandRef.current = feature(
+            topo,
+            topo.objects.land
+          ) as unknown as FeatureCollection<Geometry>;
+        })
+        .catch(() => {
+          hiLandRequested.current = false;
+        });
+    };
 
     // Screen positions of visible pins, refreshed every frame (for hover hit-testing).
     let projected: { x: number; y: number; ping: Ping }[] = [];
@@ -159,14 +235,34 @@ export default function VisitorMap() {
 
     let raf = 0;
     const render = () => {
+      try {
+        renderFrame();
+      } catch {
+        // Never let one bad frame kill the loop.
+      }
+      raf = requestAnimationFrame(render);
+    };
+    const renderFrame = () => {
       const t = performance.now() / 1000;
 
-      // Gentle auto-spin, pausing briefly after the user interacts.
-      if (!reduceMotion && !drag.active && performance.now() - lastInteract > 2500) {
+      // Ease zoom toward its target.
+      view.zoom += (view.target - view.zoom) * 0.16;
+      if (Math.abs(view.target - view.zoom) < 0.001) view.zoom = view.target;
+      if (view.target > 1.6) requestHiLand();
+
+      // Gentle auto-spin, pausing briefly after the user interacts and
+      // while zoomed in (spinning while zoomed is disorienting).
+      if (
+        !reduceMotion &&
+        !drag.active &&
+        view.zoom < 1.3 &&
+        performance.now() - lastInteract > 2500
+      ) {
         rot.lambda += 0.08;
       }
 
-      const R = size / 2 - 14;
+      const Rb = size / 2 - 14; // base (fit-to-canvas) radius
+      const R = Rb * view.zoom;
       const cx = size / 2;
       const projection = geoOrthographic()
         .translate([cx, cx])
@@ -178,15 +274,18 @@ export default function VisitorMap() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, size, size);
 
-      // Atmosphere halo
-      const halo = ctx.createRadialGradient(cx, cx, R * 0.85, cx, cx, R * 1.18);
-      halo.addColorStop(0, "rgba(56,189,248,0)");
-      halo.addColorStop(0.72, "rgba(56,189,248,0.16)");
-      halo.addColorStop(1, "rgba(56,189,248,0)");
-      ctx.fillStyle = halo;
-      ctx.beginPath();
-      ctx.arc(cx, cx, R * 1.18, 0, Math.PI * 2);
-      ctx.fill();
+      // Atmosphere halo (fades out as you zoom in)
+      if (view.zoom < 1.8) {
+        const haloAlpha = 0.16 * Math.max(0, (1.8 - view.zoom) / 0.8);
+        const halo = ctx.createRadialGradient(cx, cx, Rb * 0.85, cx, cx, Rb * 1.18);
+        halo.addColorStop(0, "rgba(56,189,248,0)");
+        halo.addColorStop(0.72, `rgba(56,189,248,${haloAlpha})`);
+        halo.addColorStop(1, "rgba(56,189,248,0)");
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(cx, cx, Rb * 1.18, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // Ocean sphere with top-left light
       const ocean = ctx.createRadialGradient(
@@ -208,9 +307,10 @@ export default function VisitorMap() {
       ctx.lineWidth = 0.6;
       ctx.stroke();
 
-      // Land
+      // Land — switch to 50m coastlines when zoomed in enough to notice.
+      const landData = view.zoom > 2.2 && hiLandRef.current ? hiLandRef.current : land;
       ctx.beginPath();
-      path(land);
+      path(landData);
       ctx.fillStyle = "rgba(125,177,255,0.28)";
       ctx.fill();
       ctx.strokeStyle = "rgba(164,204,255,0.45)";
@@ -264,12 +364,19 @@ export default function VisitorMap() {
         }
       }
 
-      raf = requestAnimationFrame(render);
     };
     raf = requestAnimationFrame(render);
 
-    // Drag to spin (pointer events cover mouse + touch).
+    // Drag to spin, wheel/pinch to zoom (pointer events cover mouse + touch).
     const onDown = (e: PointerEvent) => {
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pointers.size === 2) {
+        // Second finger down — switch from drag to pinch.
+        const [a, b] = [...pointers.values()];
+        pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: view.target };
+        drag.active = false;
+        return;
+      }
       drag.active = true;
       drag.moved = false;
       drag.x = e.clientX;
@@ -279,14 +386,26 @@ export default function VisitorMap() {
       } catch {}
     };
     const onMove = (e: PointerEvent) => {
+      if (pointers.has(e.pointerId)) {
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+      if (pinch && pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        view.target = Math.max(1, Math.min(MAX_ZOOM, pinch.z0 * (d / pinch.d0)));
+        lastInteract = performance.now();
+        return;
+      }
       if (drag.active) {
         const dx = e.clientX - drag.x;
         const dy = e.clientY - drag.y;
         if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
         drag.x = e.clientX;
         drag.y = e.clientY;
-        rot.lambda += dx * 0.35;
-        rot.phi = Math.max(-75, Math.min(75, rot.phi - dy * 0.35));
+        // Rotation slows as you zoom so panning stays precise.
+        const k = 0.35 / view.zoom;
+        rot.lambda += dx * k;
+        rot.phi = clampPhi(rot.phi - dy * k);
         lastInteract = performance.now();
         setHovered(null);
         return;
@@ -311,17 +430,47 @@ export default function VisitorMap() {
         return { ping: best.ping, x: best.x, y: best.y };
       });
     };
-    const onUp = () => {
+    const onUp = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinch = null;
       drag.active = false;
       lastInteract = performance.now();
     };
     const onLeave = () => setHovered(null);
+
+    // Wheel-zoom anchored to the cursor: the point under the pointer stays
+    // put while the globe scales around it.
+    const projFor = (z: number) =>
+      geoOrthographic()
+        .translate([size / 2, size / 2])
+        .scale((size / 2 - 14) * z)
+        .rotate([rot.lambda, rot.phi]);
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const before = projFor(view.target).invert?.([mx, my]);
+      view.target = Math.max(
+        1,
+        Math.min(MAX_ZOOM, view.target * Math.exp(-e.deltaY * 0.0018))
+      );
+      if (before && isFinite(before[0]) && isFinite(before[1])) {
+        const after = projFor(view.target).invert?.([mx, my]);
+        if (after && isFinite(after[0]) && isFinite(after[1])) {
+          rot.lambda += before[0] - after[0];
+          rot.phi = clampPhi(rot.phi + (before[1] - after[1]));
+        }
+      }
+      lastInteract = performance.now();
+    };
 
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
     canvas.addEventListener("pointerup", onUp);
     canvas.addEventListener("pointercancel", onUp);
     canvas.addEventListener("pointerleave", onLeave);
+    canvas.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
       cancelAnimationFrame(raf);
@@ -331,8 +480,75 @@ export default function VisitorMap() {
       canvas.removeEventListener("pointerup", onUp);
       canvas.removeEventListener("pointercancel", onUp);
       canvas.removeEventListener("pointerleave", onLeave);
+      canvas.removeEventListener("wheel", onWheel);
     };
   }, [land]);
+
+  // Opt-in precise pin: asks for browser location permission, then moves
+  // your pin from IP-city accuracy to your actual coordinates.
+  const dropExactPin = () => {
+    if (!navigator.geolocation) {
+      setLocError("Your browser doesn't support location.");
+      return;
+    }
+    setLocating(true);
+    setLocError(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const place = await reverseGeocode(lat, lon);
+          const patch = { lat, lon, ...place };
+
+          let updated: Ping | null = null;
+          if (you?.id) {
+            const { data } = await supabase
+              .from("visitor_pings")
+              .update(patch)
+              .eq("id", you.id)
+              .select()
+              .single();
+            updated = (data as Ping) ?? null;
+          }
+          if (!updated) {
+            const { data } = await supabase
+              .from("visitor_pings")
+              .insert(patch)
+              .select()
+              .single();
+            updated = (data as Ping) ?? null;
+            if (updated) {
+              localStorage.setItem(PING_KEY, String(Date.now()));
+              localStorage.setItem(PING_ID_KEY, updated.id);
+            }
+          }
+          if (updated) {
+            setYou(updated);
+            setPings((prev) => {
+              const rest = prev.filter((p) => p.id !== updated!.id);
+              return [updated!, ...rest];
+            });
+            setPrecise(true);
+            localStorage.setItem(PING_PRECISE_KEY, "1");
+          }
+        } catch {
+          setLocError("Couldn't save your pin — try again.");
+        } finally {
+          setLocating(false);
+        }
+      },
+      (err) => {
+        setLocating(false);
+        setLocError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission denied — keeping your approximate pin."
+            : "Couldn't get your location — keeping your approximate pin."
+        );
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   const uniqueCountries = new Set(
     pings.map((p) => p.country_code).filter(Boolean)
@@ -357,6 +573,38 @@ export default function VisitorMap() {
           ref={canvasRef}
           className="relative cursor-grab touch-pan-y active:cursor-grabbing"
         />
+
+        {/* Zoom controls */}
+        <div className="absolute bottom-4 right-4 flex flex-col gap-1.5">
+          <button
+            onClick={() => zoomBy(1.7)}
+            aria-label="Zoom in"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-slate-800/80 text-lg font-bold text-blue-100 backdrop-blur transition-colors hover:bg-slate-700"
+          >
+            +
+          </button>
+          <button
+            onClick={() => zoomBy(1 / 1.7)}
+            aria-label="Zoom out"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-slate-800/80 text-lg font-bold text-blue-100 backdrop-blur transition-colors hover:bg-slate-700"
+          >
+            −
+          </button>
+          <button
+            onClick={() => {
+              viewRef.current.target = 1;
+            }}
+            aria-label="Reset zoom"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-slate-800/80 text-[10px] font-semibold uppercase tracking-wide text-blue-200 backdrop-blur transition-colors hover:bg-slate-700"
+          >
+            fit
+          </button>
+        </div>
+
+        {/* Interaction hint */}
+        <div className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-white/10 bg-slate-900/70 px-3 py-1 text-[11px] text-blue-300/80 backdrop-blur">
+          drag to spin · scroll or pinch to zoom
+        </div>
 
         {/* Hover tooltip */}
         {hovered && (
@@ -385,7 +633,7 @@ export default function VisitorMap() {
           <MapPin className="h-4 w-4 text-orange-400" />
           {you?.city ? (
             <span>
-              You just dropped a pin from{" "}
+              {precise ? "Your pin is on your exact spot in" : "You just dropped a pin from"}{" "}
               <span className="font-semibold text-white">
                 {[you.city, you.country].filter(Boolean).join(", ")}
               </span>
@@ -394,12 +642,27 @@ export default function VisitorMap() {
             <span>Drag the globe — cyan dots are past visitors, orange is you.</span>
           )}
         </div>
-        <div className="text-sm text-blue-300/70">
-          <span className="font-semibold text-cyan-300">{pings.length}</span> recent pins ·{" "}
-          <span className="font-semibold text-cyan-300">{uniqueCountries}</span>{" "}
-          {uniqueCountries === 1 ? "country" : "countries"}
+        <div className="flex items-center gap-4">
+          {!precise && (
+            <button
+              onClick={dropExactPin}
+              disabled={locating}
+              className="flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium text-cyan-200 transition-colors hover:bg-cyan-500/20 disabled:opacity-50"
+            >
+              <LocateFixed className={`h-4 w-4 ${locating ? "animate-spin" : ""}`} />
+              {locating ? "Locating…" : "Pin my exact spot"}
+            </button>
+          )}
+          <div className="text-sm text-blue-300/70">
+            <span className="font-semibold text-cyan-300">{pings.length}</span> recent pins ·{" "}
+            <span className="font-semibold text-cyan-300">{uniqueCountries}</span>{" "}
+            {uniqueCountries === 1 ? "country" : "countries"}
+          </div>
         </div>
       </div>
+      {locError && (
+        <div className="mt-2 text-center text-xs text-blue-300/60 sm:text-right">{locError}</div>
+      )}
     </div>
   );
 }
