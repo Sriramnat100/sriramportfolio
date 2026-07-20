@@ -58,43 +58,43 @@ type Course = { code: string; title: string; tools: string[]; description: strin
 function CourseCard({ course }: { course: Course }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden transition-colors hover:border-blue-400/40">
+    <div className="border border-line bg-paper overflow-hidden transition-colors hover:border-accent/50">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between gap-4 p-5 text-left"
         aria-expanded={open}
       >
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="shrink-0 text-xs font-bold text-blue-300 bg-blue-500/15 border border-blue-400/30 rounded-md px-2.5 py-1">
+          <span className="shrink-0 font-mono text-xs font-medium text-accent border border-accent/40 px-2.5 py-1">
             {course.code}
           </span>
-          <span className="font-semibold text-white">{course.title}</span>
+          <span className="font-semibold text-ink">{course.title}</span>
         </div>
-        <ChevronDown className={`w-5 h-5 text-blue-300 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-5 h-5 text-ink-soft shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
         <div className="overflow-hidden">
           <div className="px-5 pb-5 space-y-4">
-            <p className="text-blue-100/80 text-sm leading-relaxed">{course.description}</p>
+            <p className="text-ink-soft text-sm leading-relaxed">{course.description}</p>
             <div>
-              <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">Tools &amp; Languages</div>
+              <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">Tools &amp; Languages</div>
               {course.tools.length ? (
                 <div className="flex flex-wrap gap-2">
                   {course.tools.map((tool) => (
-                    <span key={tool} className="bg-orange-500/15 text-orange-200 border border-orange-400/30 rounded-full px-3 py-1 text-xs font-medium">
+                    <span key={tool} className="font-mono text-ink border border-line bg-paper-2 px-2.5 py-1 text-xs">
                       {tool}
                     </span>
                   ))}
                 </div>
               ) : (
-                <span className="text-blue-200/60 text-sm italic">Theory-focused — no coding</span>
+                <span className="text-ink-soft/80 text-sm italic">Theory-focused — no coding</span>
               )}
             </div>
             <div>
-              <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">Skills Learned</div>
+              <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">Skills Learned</div>
               <div className="flex flex-wrap gap-2">
                 {course.skills.map((skill) => (
-                  <span key={skill} className="bg-blue-500/15 text-blue-100 border border-blue-400/25 rounded-full px-3 py-1 text-xs font-medium">
+                  <span key={skill} className="font-mono text-ink-soft border border-line px-2.5 py-1 text-xs">
                     {skill}
                   </span>
                 ))}
@@ -130,7 +130,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = "" }: { end: number; d
   }, [end, duration])
 
   return (
-    <span className="font-bold text-3xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+    <span>
       {count}
       {suffix}
     </span>
@@ -555,24 +555,12 @@ export default function Portfolio() {
     },
   ]
 
-  // Update skills array type
-  const skills: Skill[] = [
-    { name: "C++", level: 90, icon: Code, projects: 6 },
-    { name: "Python", level: 95, icon: Brain, projects: 8 },
-    { name: "Java", level: 85, icon: Code, projects: 4 },
-    { name: "JavaScript", level: 80, icon: Globe, projects: 4 },
-    { name: "AWS (EC2, S3, RDS)", level: 80, icon: Database, projects: 4 },
-    { name: "PostgreSQL", level: 80, icon: Database, projects: 4 },
-    { name: "Git/GitHub", level: 90, icon: Users, projects: 8 },
-    { name: "REST APIs", level: 85, icon: Globe, projects: 6 },
-    { name: "Flask", level: 80, icon: Zap, projects: 4 },
-    { name: "React", level: 85, icon: Globe, projects: 5 },
-    { name: "TensorFlow", level: 80, icon: Brain, projects: 4 },
-    { name: "PyTorch", level: 75, icon: Brain, projects: 3 },
-    { name: "OpenCV", level: 75, icon: Camera, projects: 3 },
-    { name: "scikit-learn", level: 75, icon: Brain, projects: 3 },
-    { name: "Numpy", level: 80, icon: Database, projects: 4 },
-    { name: "Pandas", level: 80, icon: Database, projects: 4 },
+  // Grouped plainly — no made-up proficiency percentages.
+  const skillGroups: { label: string; items: string[] }[] = [
+    { label: "Languages", items: ["Python", "C++", "Java", "JavaScript / TypeScript", "SQL"] },
+    { label: "ML & Data", items: ["TensorFlow", "PyTorch", "OpenCV", "scikit-learn", "NumPy", "Pandas"] },
+    { label: "Web & Cloud", items: ["React", "Flask", "REST APIs", "PostgreSQL", "AWS (EC2, S3, RDS)", "Supabase"] },
+    { label: "Tools", items: ["Git / GitHub", "Arduino", "ROS", "3D Printing"] },
   ]
 
   const name = "Sriram Natarajan";
@@ -670,120 +658,22 @@ export default function Portfolio() {
   const namePart = isComplete ? "Sriram Natarajan" : typedText.replace("Hi, I'm ", "");
   const prefixPart = isComplete ? "Hi, I'm " : typedText.replace(namePart, "");
 
-  // Enhanced SkillsCarousel with side buttons and autoplay
-  function SkillsCarousel({ skills }: { skills: Skill[] }) {
-    const [index, setIndex] = useState(0);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const prev = () => setIndex((i) => (i === 0 ? skills.length - 1 : i - 1));
-    const next = () => setIndex((i) => (i === skills.length - 1 ? 0 : i + 1));
-    const skill = skills[index];
-    const Icon = skill.icon;
-
-    // Autoplay logic
-    useEffect(() => {
-      intervalRef.current = setInterval(() => {
-        setIndex((i) => (i === skills.length - 1 ? 0 : i + 1));
-      }, 3000);
-      return () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-      };
-    }, [skills.length]);
-
-    // Pause on hover
-    const handleMouseEnter = () => intervalRef.current && clearInterval(intervalRef.current);
-    const handleMouseLeave = () => {
-      intervalRef.current = setInterval(() => {
-        setIndex((i) => (i === skills.length - 1 ? 0 : i + 1));
-      }, 3000);
-    };
-
-    return (
-      <div className="flex flex-col items-center space-y-4 relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <div className="flex items-center justify-center w-full relative">
-          {/* Left Arrow */}
-          <button
-            onClick={prev}
-            aria-label="Previous Skill"
-            className="absolute left-0 z-10 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg hover:scale-110 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-            tabIndex={0}
-          >
-            <ChevronLeft className="w-8 h-8" />
-          </button>
-          <Card className="p-8 flex flex-col items-center w-full max-w-md mx-auto bg-transparent shadow-none border-none">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center mr-4">
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3">
-                  <h3 className="font-bold text-white text-lg">{skill.name}</h3>
-                </div>
-              </div>
-            </div>
-          </Card>
-          {/* Right Arrow */}
-          <button
-            onClick={next}
-            aria-label="Next Skill"
-            className="absolute right-0 z-10 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-700 to-blue-500 text-white shadow-lg hover:scale-110 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
-            tabIndex={0}
-          >
-            <ChevronRight className="w-8 h-8" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Notification Popup */}
       {showNotification && (
-        <div
-          style={{
-            position: "fixed",
-            top: 24,
-            right: 24,
-            zIndex: 9999,
-            background: "#fff", // white background
-            color: "#222", // black text
-            padding: "2rem 2.5rem",
-            borderRadius: "2rem",
-            boxShadow: "0 4px 32px rgba(0,0,0,0.25)",
-            display: "flex",
-            alignItems: "center",
-            gap: "1.5rem",
-            fontSize: "1.5rem",
-            minWidth: "340px",
-            minHeight: "80px"
-          }}
-        >
-          <span>{notificationMessage}</span>
+        <div className="fixed top-6 right-6 z-[9999] flex items-center gap-4 border border-line bg-paper px-5 py-3.5 text-ink shadow-lg">
+          <span className="text-sm font-medium">{notificationMessage}</span>
           {notificationMessage === "Image ready! 🎉" && (
             <button
-              style={{
-                background: "#38bdf8",
-                color: "#fff",
-                border: "none",
-                borderRadius: "0.75rem",
-                padding: "0.75rem 1.5rem",
-                cursor: "pointer",
-                fontSize: "1.1rem"
-              }}
+              className="bg-ink px-3 py-1.5 text-sm text-paper transition-colors hover:bg-accent"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             >
-              Scroll to Top
+              Scroll to top
             </button>
           )}
           <button
-            style={{
-              background: "transparent",
-              color: "#222", // black close button
-              border: "none",
-              fontSize: "2rem",
-              marginLeft: "0.75rem",
-              cursor: "pointer"
-            }}
+            className="text-xl leading-none text-ink-soft hover:text-ink"
             onClick={() => setShowNotification(false)}
             aria-label="Close"
           >
@@ -791,19 +681,9 @@ export default function Portfolio() {
           </button>
         </div>
       )}
-      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900 overflow-x-hidden">
-      {/* Custom CSS for animations */}
+      <div className="min-h-screen bg-paper text-ink overflow-x-hidden">
+      {/* Intro splash animations */}
       <style jsx global>{`
-        @keyframes gradient {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-          50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6); }
-        }
-        .animate-gradient { animation: gradient 8s ease infinite; }
-        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
         @keyframes intro-name {
           0%   { opacity: 0; transform: translateY(28px) scale(0.94); filter: blur(14px); }
           60%  { filter: blur(0); }
@@ -813,52 +693,28 @@ export default function Portfolio() {
           0%   { opacity: 0; transform: translateY(16px); }
           100% { opacity: 1; transform: translateY(0); }
         }
-        @keyframes intro-glow {
-          0%, 100% { opacity: 0.35; transform: scale(1); }
-          50%      { opacity: 0.6; transform: scale(1.08); }
-        }
-        /* Name fades/blurs in once, while the gradient keeps shimmering */
-        .animate-intro-name { animation: intro-name 1.9s cubic-bezier(0.22, 1, 0.36, 1) both, gradient 8s ease infinite; }
+        .animate-intro-name { animation: intro-name 1.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
         .animate-intro-cue  { animation: intro-fade-up 1s ease-out 2.2s both; }
-        .animate-intro-glow { animation: intro-glow 6s ease-in-out infinite; }
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-        }
       `}</style>
 
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full bg-slate-900/90 backdrop-blur-xl z-50 border-b border-blue-500/20 shadow-lg transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
+      <nav className={`fixed top-0 w-full bg-paper/95 backdrop-blur z-50 border-b border-line transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
         <div className="w-full px-6 sm:px-8 lg:px-12">
-          <div className="flex justify-between items-center py-4">
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_200%]">
+          <div className="flex justify-between items-center py-3.5">
+            <a href="/#" className="font-display text-xl font-semibold tracking-tight text-ink">
               Sriram Natarajan
-            </div>
-            <div className="hidden md:flex space-x-8">
+            </a>
+            <div className="hidden md:flex items-center gap-7">
               {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Music", "Contact"].map((item) => (
-                item === "About" ? (
-                  <a
-                    key={item}
-                    href="/#"
-                    className="text-blue-100 hover:text-cyan-400 transition-all duration-300 relative group"
-                  >
-                    {item}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full transition-all duration-300"></span>
-                  </a>
-                ) : (
                 <a
                   key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-blue-100 hover:text-cyan-400 transition-all duration-300 relative group"
+                  href={item === "About" ? "/#" : `#${item.toLowerCase()}`}
+                  className="font-mono text-[13px] uppercase tracking-wider text-ink-soft hover:text-accent transition-colors border-b border-transparent hover:border-accent pb-0.5"
                 >
                   {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full transition-all duration-300"></span>
                 </a>
-                )
               ))}
             </div>
-            
           </div>
         </div>
       </nav>
@@ -867,20 +723,7 @@ export default function Portfolio() {
       <IntroSplash />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute top-40 left-1/2 w-80 h-80 bg-cyan-400/20 rounded-full mix-blend-multiply filter blur-xl animate-pulse"
-            style={{ animationDelay: "4s" }}
-          ></div>
-        </div>
-
+      <section className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -891,46 +734,42 @@ export default function Portfolio() {
                   <ChevronRight className="w-4 h-4 ml-2" />
                 </div> */}
 
-                <div className="space-y-4">
-                  <h1 className="text-6xl lg:text-8xl font-bold text-white leading-tight">
-                    {prefixPart}<span className="text-blue-300">{namePart}</span>
+                <div className="space-y-5">
+                  <h1 className="font-display text-5xl lg:text-7xl font-medium text-ink leading-[1.05] tracking-tight">
+                    {prefixPart}<span className="italic text-accent">{namePart}</span>
                   </h1>
-                  <div className="text-2xl lg:text-3xl font-semibold text-blue-200 mb-4">
-                    Computer Science + Linguistics Major,<br />
-                    Data Science Minor
+                  <div className="font-mono text-sm uppercase tracking-wider text-ink-soft">
+                    Computer Science + Linguistics · Data Science minor · UIUC
                   </div>
-                  <p className="text-xl text-blue-100 leading-relaxed max-w-2xl">
+                  <p className="text-lg text-ink-soft leading-relaxed max-w-2xl">
                     {about}
                   </p>
                 </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 py-8">
+              <div className="flex flex-wrap gap-x-10 gap-y-4 py-6 border-y border-line">
                 {stats.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  <div key={index}>
+                    <div className="font-display text-3xl font-semibold text-ink">
                       <AnimatedCounter end={stat.value} suffix={stat.suffix} />
                     </div>
-                    <div className="text-sm text-blue-200 mt-1">{stat.label}</div>
+                    <div className="font-mono text-xs uppercase tracking-wider text-ink-soft mt-1">{stat.label}</div>
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap items-center gap-5">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow"
+                  className="rounded-none bg-ink text-paper hover:bg-accent transition-colors shadow-none"
                   asChild
                 >
                   <Link href="/#contact">
                     <Mail className="w-5 h-5 mr-2" />
-                    Let's Collaborate
+                    Get in touch
                   </Link>
                 </Button>
-              </div>
-
-              <div className="flex items-center space-x-6 pt-4">
                 {[
                   { icon: Github, href: "https://github.com/Sriramnat100", label: "GitHub" },
                   { icon: Linkedin, href: "https://www.linkedin.com/in/sriramnat/", label: "LinkedIn" },
@@ -938,7 +777,7 @@ export default function Portfolio() {
                   <Link
                     key={index}
                     href={social.href}
-                    className="p-3 rounded-full bg-white/10 backdrop-blur-sm shadow-lg hover:shadow-xl text-white hover:text-blue-400 transition-all duration-300 hover:scale-110 border border-white/20"
+                    className="text-ink-soft hover:text-accent transition-colors"
                     aria-label={social.label}
                   >
                     <social.icon className="w-6 h-6" />
@@ -948,18 +787,17 @@ export default function Portfolio() {
             </div>
 
             <div className="relative">
-              <div className="relative w-full max-w-lg mx-auto ml-20">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+              <div className="relative w-full max-w-lg mx-auto lg:ml-20">
                 <div className="relative">
                   {loading || showGif ? (
-                    <img src="/untitled folder 2/pandaForwardRoll.gif" alt="Loading..." className="w-[600px] h-[600px] rounded-full border-8 border-white/20 shadow-2xl object-cover" />
+                    <img src="/untitled folder 2/pandaForwardRoll.gif" alt="Loading..." className="w-[600px] h-[600px] rounded-full border border-line shadow-lg object-cover" />
                   ) : (
                   <Image
                       src={headshotUrl}
-                    alt="Sriram Natarajan - Full-Stack Developer"
+                    alt="Sriram Natarajan"
                     width={600}
                     height={600}
-                    className="relative rounded-full border-8 border-white/20 shadow-2xl hover:scale-105 transition-transform duration-500"
+                    className="relative rounded-full border border-line shadow-lg"
                     onLoad={() => {
                       // Image loaded successfully
                     }}
@@ -967,68 +805,68 @@ export default function Portfolio() {
                   )}
                     </div>
                   </div>
-              <div className="mt-6 flex flex-col items-center justify-center text-center ml-12">
+              <div className="mt-8 flex flex-col items-center justify-center text-center">
                 {loading ? (
-                  <div className="mt-6 flex flex-col items-center justify-center text-center">
-                    <h2 className="text-2xl font-bold text-blue-200 mb-2">Loading...</h2>
-                    <p className="text-lg text-blue-100">(Feel free to scroll, we'll let you know when your image is ready!)</p>
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <h2 className="font-display text-2xl font-semibold text-ink mb-2">Working on it…</h2>
+                    <p className="text-ink-soft">Feel free to keep scrolling — I&apos;ll let you know when it&apos;s ready.</p>
                 </div>
                 ) : imagesLeft === 0 ? (
-                  <div className="mt-6 flex flex-col items-center justify-center text-center">
-                    <h2 className="text-2xl font-bold text-blue-200 mb-2"></h2>
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <p className="text-ink-soft text-sm">Out of free generations for today — come back tomorrow.</p>
               </div>
                 ) : showPrompt ? (
-                  <div className="mt-6 flex flex-col items-center justify-center text-center">
-                    <h2 className="text-2xl font-bold text-blue-200 mb-2">You said:</h2>
-                    <p className="text-xl text-blue-100">{restatedPrompt}</p>
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <h2 className="font-display text-2xl font-semibold text-ink mb-2">You said:</h2>
+                    <p className="text-lg text-ink-soft italic">&ldquo;{restatedPrompt}&rdquo;</p>
             </div>
                 ) : (
-                  <form onSubmit={step === 'prompt' ? handlePromptSubmit : step === 'email' ? handleEmailSubmit : handleOtpSubmit} className="w-full max-w-md mx-auto">
+                  <form onSubmit={step === 'prompt' ? handlePromptSubmit : step === 'email' ? handleEmailSubmit : handleOtpSubmit} className="w-full max-w-md mx-auto border border-line bg-paper-2/60 p-6 text-left">
                     {step === 'prompt' ? (
                       <>
-                        <div className="mb-4 text-xl font-bold text-blue-200">
-                          <span className="text-3xl font-extrabold text-blue-200">Don't like my <span className="text-orange-400 font-bold">orange background</span>, generate another background for me?</span>
+                        <div className="mb-3 font-display text-xl font-semibold text-ink">
+                          Not a fan of the orange backdrop?
                         </div>
-                        <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="(EX: Put Sriram in a futuristic city on Mars)" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200" rows={3} />
+                        <p className="mb-4 text-sm text-ink-soft">
+                          Type a scene and an AI model will re-shoot my headshot there. Genuinely — try it.
+                        </p>
+                        <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="e.g. put Sriram in a futuristic city on Mars" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60" rows={3} />
                         <Button
                           type="submit"
-                          className="mt-4 w-full text-xl py-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow text-3xl"
-                          style={{ fontSize: '2rem', padding: '1.5rem 2rem' }}
+                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
                         >
-                          Add a new background!
+                          Generate a new background
                         </Button>
                       </>
                     ) : step === 'email' ? (
                       <>
-                        <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email (no code sent if you've already verified before)" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200" />
-                        {otpError && <div className="mt-2 text-red-400 text-sm">{otpError}</div>}
+                        <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email (no code sent if you've verified before)" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60" />
+                        {otpError && <div className="mt-2 text-accent text-sm">{otpError}</div>}
                         <Button
                           type="submit"
                           disabled={sendingOtp}
-                          className="mt-4 w-full text-xl py-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow text-3xl"
-                          style={{ fontSize: '2rem', padding: '1.5rem 2rem' }}
+                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
                         >
-                          {sendingOtp ? "Sending code..." : "Send me a code"}
+                          {sendingOtp ? "Sending code…" : "Send me a code"}
                         </Button>
                       </>
                     ) : (
                       <>
-                        <div className="mb-3 text-blue-200 text-base">
-                          Check <span className="font-bold">{email}</span> for a 6-digit code.
+                        <div className="mb-3 text-ink-soft text-sm">
+                          Check <span className="font-semibold text-ink">{email}</span> for a 6-digit code.
                         </div>
-                        <Input type="text" inputMode="numeric" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter 6-digit code" className="border-blue-400/30 focus:border-blue-400 focus:ring-blue-400/20 bg-white/10 text-white placeholder:text-blue-200 tracking-widest text-center" />
-                        {otpError && <div className="mt-2 text-red-400 text-sm">{otpError}</div>}
+                        <Input type="text" inputMode="numeric" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit code" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60 tracking-widest text-center" />
+                        {otpError && <div className="mt-2 text-accent text-sm">{otpError}</div>}
                         <Button
                           type="submit"
-                          className="mt-4 w-full text-xl py-6 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse-glow text-3xl"
-                          style={{ fontSize: '2rem', padding: '1.5rem 2rem' }}
+                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
                         >
-                          Verify & Generate
+                          Verify &amp; generate
                         </Button>
                       </>
                     )}
-                    <div className="mt-6 text-blue-200 text-2xl font-bold text-center">
-                      <span className="text-base font-medium">{imagesLeft}/20 free backgrounds left for the day <span className="text-red-400 font-bold">(image generation isn't cheap!)</span></span>
+                    <div className="mt-4 font-mono text-xs text-ink-soft text-center">
+                      {imagesLeft}/20 free generations left today — this costs me real money.
                     </div>
                   </form>
                 )}
@@ -1041,19 +879,17 @@ export default function Portfolio() {
               {/* Education Section */}
         <section
           id="education"
-          className="py-24 px-4 sm:px-8 lg:px-10 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900 relative"
+          className="py-24 px-4 sm:px-8 lg:px-10 bg-paper-2 border-y border-line relative"
         >
           <div className="max-w-7xl mx-auto">
             {/* Header */}
-            <div className="text-center mb-14">
-              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3">
-                <span className="text-white">University of Illinois,</span>{" "}
-                <span className="text-blue-400">Urbana</span>
-                <span className="text-orange-400">-Champaign</span>
+            <div className="mb-14">
+              <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">01 · Education</div>
+              <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-ink tracking-tight mb-3">
+                University of Illinois, <span className="italic">Urbana-Champaign</span>
               </h3>
-              <div className="inline-flex items-center gap-2 text-base sm:text-lg text-blue-200 font-medium bg-white/5 border border-white/10 rounded-full px-5 py-2">
-                <span className="text-blue-400">🎓</span>
-                Expected Graduation · {education.grad.replace('Expected Graduation: ', '')}
+              <div className="font-mono text-sm text-ink-soft">
+                Expected graduation · {education.grad.replace('Expected Graduation: ', '')}
               </div>
             </div>
 
@@ -1073,20 +909,20 @@ export default function Portfolio() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className="rounded-2xl bg-white/5 border border-white/10 p-5 backdrop-blur-sm hover:bg-white/10 transition-colors flex flex-col justify-center lg:flex-1"
+                    className="border border-line bg-paper p-5 flex flex-col justify-center lg:flex-1"
                   >
-                    <div className="text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                    <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">
                       {item.label}
                     </div>
-                    <div className="text-xl font-bold text-white leading-snug">{item.value}</div>
+                    <div className="font-display text-xl font-semibold text-ink leading-snug">{item.value}</div>
                   </div>
                 ))}
               </div>
 
               {/* Relevant Coursework — expandable cards */}
               <div>
-                <h4 className="text-2xl sm:text-3xl font-bold text-white mb-2">Relevant Coursework</h4>
-                <p className="text-blue-200/70 mb-5 text-sm">Tap a course to see what I learned and the tools I used.</p>
+                <h4 className="font-display text-2xl sm:text-3xl font-medium text-ink mb-2">Relevant Coursework</h4>
+                <p className="text-ink-soft mb-5 text-sm">Tap a course to see what I learned and the tools I used.</p>
                 <div className="space-y-3">
                   {courses.map((course) => (
                     <CourseCard key={course.code} course={course} />
@@ -1100,112 +936,78 @@ export default function Portfolio() {
       {/* About Section */}
       {/* Removed entire section */}
 
-      {/* Experience Timeline */}
+      {/* Experience */}
       <section
         id="experience"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900"
+        className="py-24 px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Professional Journey</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              My career progression through innovative companies and challenging projects
-            </p>
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-14">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">02 · Experience</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Where I&apos;ve worked</h2>
           </div>
 
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gradient-to-b from-blue-400 to-cyan-400"></div>
-
+          <div className="divide-y divide-line border-y border-line">
             {experience.map((exp, index) => (
-              <div
-                key={index}
-                className={`relative flex items-center mb-12 ${index % 2 === 0 ? "justify-start" : "justify-end"}`}
-              >
-                <div className={`w-full max-w-lg ${index % 2 === 0 ? "pr-2" : "pl-2"}`}>
-                  <Card className="p-6 shadow-xl hover:shadow-2xl transition-all duration-500 border-0 bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-105">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Image
-                          src={exp.logo}
-                          alt={`${exp.company} logo`}
-                          width={64}
-                          height={64}
-                          className="w-14 h-14 rounded-xl bg-white object-contain object-center p-1.5 shrink-0 border border-white/20 shadow-sm"
-                        />
-                        <div className="min-w-0">
-                          <h3 className="text-xl font-bold text-white leading-tight">
-                            {exp.title.includes('<br') ? (
-                              <span dangerouslySetInnerHTML={{ __html: exp.title }} />
-                            ) : (
-                              exp.title
-                            )}
-                          </h3>
-                          <p className="text-blue-400 font-semibold">{exp.company}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-blue-200">
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                          {exp.period}
-                        </span>
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                          {exp.location}
-                        </span>
-                      </div>
-                    </div>
-                    {/* Description */}
-                    {Array.isArray(exp.description) ? (
-                      (exp.description as string[]).map((desc, i) =>
-                        typeof desc === 'string' && desc.includes('<br') ? (
-                          <p key={i} className="text-blue-100 mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: desc }} />
-                        ) : (
-                          <p key={i} className="text-blue-100 mb-4 leading-relaxed">{desc}</p>
-                        )
-                      )
-                    ) : typeof exp.description === 'string' ? (
-                      (exp.description as string).includes('<br') ? (
-                        <p className="text-blue-100 mb-4 leading-relaxed" dangerouslySetInnerHTML={{ __html: exp.description as string }} />
-                      ) : (
-                        <p className="text-blue-100 mb-4 leading-relaxed">{exp.description as string}</p>
-                      )
-                    ) : null}
-                    {"demo" in exp && exp.demo ? (
-                      <Link
-                        href={exp.demo}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-cyan-300 hover:text-cyan-200 text-sm font-medium mb-4 transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                        {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot Project"}
-                      </Link>
-                    ) : null}
-                    {/* Remove stats row for specific cards */}
-                    {![
-                      'Course Assistant Computer Science 124',
-                      'IlliniResearch',
-                      'Beyond Terra',
-                      "Alzheimer's Researcher"
-                    ].includes(exp.title.replace(/<br\s*\/?>(\s*)?/g, ' ').trim()) && (
-                      <div className="flex flex-wrap gap-2">
-                        {exp.technologies.map((tech, techIndex) => (
-                          <Badge
-                            key={techIndex}
-                            variant="secondary"
-                            className="bg-blue-500/20 text-blue-200 hover:bg-blue-500/30 transition-colors border border-blue-400/30"
-                          >
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
+              <div key={index} className="grid gap-4 py-8 sm:grid-cols-[9rem_1fr] sm:gap-8">
+                {/* Left rail: dates */}
+                <div className="font-mono text-xs uppercase tracking-wide text-ink-soft pt-1">
+                  {exp.period}
+                  <div className="mt-1 normal-case tracking-normal text-ink-soft/70">{exp.location}</div>
                 </div>
 
-                {/* Timeline dot */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full border-4 border-slate-800 shadow-lg"></div>
+                {/* Entry */}
+                <div>
+                  <div className="flex items-start gap-4">
+                    <Image
+                      src={exp.logo}
+                      alt={`${exp.company} logo`}
+                      width={64}
+                      height={64}
+                      className="w-11 h-11 bg-white object-contain object-center p-1 shrink-0 border border-line"
+                    />
+                    <div className="min-w-0">
+                      <h3 className="font-display text-xl font-semibold text-ink leading-tight">
+                        {exp.title.includes('<br') ? (
+                          <span dangerouslySetInnerHTML={{ __html: exp.title.replace(/<br\s*\/?>/g, ' ') }} />
+                        ) : (
+                          exp.title
+                        )}
+                      </h3>
+                      <p className="text-accent font-medium">{exp.company}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    {Array.isArray(exp.description) ? (
+                      (exp.description as string[]).map((desc, i) => (
+                        <p key={i} className="text-ink-soft mb-2 leading-relaxed">{desc.replace(/^\s*-\s*/, "")}</p>
+                      ))
+                    ) : typeof exp.description === 'string' ? (
+                      <p className="text-ink-soft mb-2 leading-relaxed">{(exp.description as string).replace(/^\s*-\s*/, "")}</p>
+                    ) : null}
+                  </div>
+
+                  {"demo" in exp && exp.demo ? (
+                    <Link
+                      href={exp.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-navy underline decoration-line underline-offset-4 hover:text-accent text-sm font-medium mb-3 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                      {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot Project"}
+                    </Link>
+                  ) : null}
+
+                  <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-2">
+                    {exp.technologies.map((tech, techIndex) => (
+                      <span key={techIndex} className="font-mono text-xs text-ink-soft">
+                        {tech}{techIndex < exp.technologies.length - 1 ? " ·" : ""}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -1215,14 +1017,12 @@ export default function Portfolio() {
       {/* Projects Section */}
       <section
         id="projects"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-800 via-blue-900 to-slate-900"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Featured Projects</h2>
-            <p className="text-xl text-blue-100 max-w-4xl mx-auto">
-              My most impressive and impactful projects that I've worked on!
-            </p>
+          <div className="mb-16">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">03 · Projects</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Things I&apos;ve built</h2>
           </div>
 
           {/* Featured Projects */}
@@ -1236,90 +1036,47 @@ export default function Portfolio() {
                 >
                   <div className={`space-y-6 ${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
                     <div className="space-y-4">
-                      <Badge variant="outline" className="bg-blue-500/20 text-blue-200 border-blue-400/30">
+                      <Badge variant="outline" className="font-mono rounded-none bg-transparent text-accent border-accent/40">
                         {project.category}
                       </Badge>
-                      <h3 className="text-3xl font-bold text-white">{project.title}</h3>
-                      <p className="text-lg text-blue-100 leading-relaxed">{project.longDescription}</p>
+                      <h3 className="font-display text-3xl font-semibold text-ink tracking-tight">{project.title}</h3>
+                      <p className="text-lg text-ink-soft leading-relaxed">{project.longDescription}</p>
                     </div>
 
-                    {/* Project Stats */}
-                    <div className="grid grid-cols-3 gap-4 py-4">
-                      {!project.stats || ['FarmSmart (First Place Hack Illinois)', 'Calmoto'].includes(project.title) ? (
-                        <>
-                          <div></div>
-                          <div></div>
-                          <div></div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-400">{project.stats.users}</div>
-                            <div className="text-sm text-blue-200">Active Users</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-400 flex items-center justify-center">
-                              {project.stats.rating} <Star className="w-5 h-5 ml-1 fill-current" />
-                            </div>
-                            <div className="text-sm text-blue-200">User Rating</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-400">{project.stats.downloads}</div>
-                            <div className="text-sm text-blue-200">Downloads</div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
                       {project.technologies.map((tech, techIndex) => (
-                        <Badge
-                          key={techIndex}
-                          variant="outline"
-                          className="bg-white/10 hover:bg-blue-500/20 hover:text-blue-200 transition-colors border-white/20 text-blue-100"
-                        >
-                          {tech}
-                        </Badge>
+                        <span key={techIndex} className="font-mono text-xs text-ink-soft">
+                          {tech}{techIndex < project.technologies.length - 1 ? " ·" : ""}
+                        </span>
                       ))}
                     </div>
 
-                    <div className="flex gap-4">
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        asChild
-                        className="hover:bg-blue-500/20 hover:border-blue-400 bg-transparent border-blue-400/50 text-blue-100"
+                    <div className="flex gap-6 pt-1">
+                      <Link
+                        href={project.github}
+                        className="inline-flex items-center gap-2 font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
                       >
-                        <Link href={project.github}>
-                          <Github className="w-5 h-5 mr-2" />
-                          View Code
-                        </Link>
-                      </Button>
-                      <Button
-                        size="lg"
-                        asChild
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                        <Github className="w-4 h-4" />
+                        View code
+                      </Link>
+                      <Link
+                        href={project.demo}
+                        className="inline-flex items-center gap-2 font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
                       >
-                        <Link href={project.demo}>
-                          <ExternalLink className="w-5 h-5 mr-2" />
-                          Live Demo
-                        </Link>
-                      </Button>
+                        <ExternalLink className="w-4 h-4" />
+                        Live demo
+                      </Link>
                     </div>
                   </div>
 
                   <div className={`relative ${index % 2 === 1 ? "lg:col-start-1" : ""}`}>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur-xl opacity-25 group-hover:opacity-40 transition-opacity duration-500"></div>
-                      <Image
-                        src={project.image || "/placeholder.svg"}
-                        alt={project.title}
-                        width={700}
-                        height={350}
-                        className="relative rounded-2xl shadow-2xl group-hover:scale-105 transition-transform duration-500 border border-blue-400/30 object-cover w-[700px] h-[350px]"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
+                    <Image
+                      src={project.image || "/placeholder.svg"}
+                      alt={project.title}
+                      width={700}
+                      height={350}
+                      className="border border-line object-cover w-[700px] h-[350px]"
+                    />
                   </div>
                 </div>
               ))}
@@ -1332,108 +1089,65 @@ export default function Portfolio() {
               .map((project, index) => (
                 <Card
                   key={index}
-                  className="overflow-hidden hover:shadow-2xl transition-all duration-500 group hover:scale-105 border-0 bg-white/10 backdrop-blur-sm border border-white/20"
+                  className="overflow-hidden rounded-none border border-line bg-paper shadow-none transition-colors hover:border-accent/50 group"
                 >
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden border-b border-line">
                     <Image
                       src={project.image || "/placeholder.svg"}
                       alt={project.title}
                       width={700}
                       height={350}
-                      className="w-full h-[350px] object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-[300px] object-cover"
                     />
-                    <div className="absolute top-4 right-4">
-                      <Badge variant="secondary" className="bg-white/90 text-gray-800">
-                        {project.category}
-                      </Badge>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
 
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-xl group-hover:text-blue-400 transition-colors text-white">
+                    <div className="font-mono text-[11px] uppercase tracking-wider text-accent mb-1">
+                      {project.category}
+                    </div>
+                    <CardTitle className="font-display text-xl font-semibold text-ink">
                       {project.title}
                     </CardTitle>
-                    <CardDescription className="text-sm leading-relaxed text-blue-100">
+                    <CardDescription className="text-sm leading-relaxed text-ink-soft">
                       {project.description}
                     </CardDescription>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    {/* Mini Stats */}
-                    {project.stats &&
-                      ![
-                        'IlliniResearch',
-                        'Beyond Terra',
-                        "Alzheimer's Researcher"
-                      ].includes(project.title) && (
-                        <div className="flex justify-between text-sm text-blue-200">
-                          <span className="flex items-center">
-                            <Eye className="w-4 h-4 mr-1" />
-                            {project.stats.users}
-                          </span>
-                          <span className="flex items-center">
-                            <Star className="w-4 h-4 mr-1 fill-current text-yellow-400" />
-                            {project.stats.rating}
-                          </span>
-                          <span className="flex items-center">
-                            <Download className="w-4 h-4 mr-1" />
-                            {project.stats.downloads}
-                          </span>
-                        </div>
-                      )}
-                    <div className="flex flex-wrap gap-1">
-                      {project.technologies.slice(0, 3).map((tech, techIndex) => (
-                        <Badge
-                          key={techIndex}
-                          variant="outline"
-                          className="text-xs bg-blue-500/20 text-blue-200 border-blue-400/30"
-                        >
-                          {tech}
-                        </Badge>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      {project.technologies.slice(0, 4).map((tech, techIndex) => (
+                        <span key={techIndex} className="font-mono text-xs text-ink-soft">
+                          {tech}{techIndex < Math.min(project.technologies.length, 4) - 1 ? " ·" : ""}
+                        </span>
                       ))}
-                      {project.technologies.length > 3 && (
-                        <Badge variant="outline" className="text-xs bg-blue-500/20 text-blue-200 border-blue-400/30">
-                          +{project.technologies.length - 3}
-                        </Badge>
-                      )}
                     </div>
 
-                    {/* Buttons */}
                     {project.title === "Beyond Terra" ? (
-                      <Button
-                        size="lg"
-                        asChild
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 mt-2"
+                      <Link
+                        href="https://drive.google.com/drive/u/1/folders/1qRmqG-BfqBlJLqzdnd1UOSWiOVFkGsKW"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
                       >
-                        <Link href="https://drive.google.com/drive/u/1/folders/1qRmqG-BfqBlJLqzdnd1UOSWiOVFkGsKW" target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4 mr-2" />
+                        <ExternalLink className="w-4 h-4" />
+                        Demo
+                      </Link>
+                    ) : (
+                      <div className="flex gap-5 pt-1">
+                        <Link
+                          href={project.github}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
+                        >
+                          <Github className="w-3.5 h-3.5" />
+                          Code
+                        </Link>
+                        <Link
+                          href={project.demo}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
                           Demo
                         </Link>
-                      </Button>
-                    ) : (
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="flex-1 bg-transparent border-blue-400/50 text-blue-100 hover:bg-blue-500/20"
-                        >
-                          <Link href={project.github}>
-                            <Github className="w-3 h-3 mr-1" />
-                            Code
-                          </Link>
-                        </Button>
-                        <Button
-                          size="sm"
-                          asChild
-                          className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                        >
-                          <Link href={project.demo}>
-                            <ExternalLink className="w-3 h-3 mr-1" />
-                            Demo
-                          </Link>
-                        </Button>
                       </div>
                     )}
                   </CardContent>
@@ -1446,66 +1160,60 @@ export default function Portfolio() {
       {/* Skills Section */}
       <section
         id="skills"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900"
+        className="py-24 px-4 sm:px-6 lg:px-8"
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Skills & Expertise</h2>
-            <p className="text-xl text-blue-100 max-w-4xl mx-auto">
-              Mastery across the full technology stack with deep expertise in modern frameworks and AI technologies
-            </p>
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-14">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">04 · Skills</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Tools I reach for</h2>
           </div>
 
-          <SkillsCarousel skills={skills} />
+          <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+            {skillGroups.map((group) => (
+              <div key={group.label} className="bg-paper p-6">
+                <div className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">
+                  {group.label}
+                </div>
+                <ul className="space-y-2">
+                  {group.items.map((item) => (
+                    <li key={item} className="text-ink-soft leading-relaxed">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Hobbies Section */}
       <section
         id="hobbies"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Hobbies & Interests</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-             When I'm not coding, I'm usually doing one of the following:
-            </p>
+          <div className="mb-14">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">05 · Off the clock</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">When I&apos;m not coding</h2>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {hobbies.map((hobby, index) => {
-              const Icon = hobby.icon;
-              return (
-                <Card
-                  key={index}
-                  className="overflow-hidden hover:shadow-2xl transition-all duration-500 hover:scale-105 border-0 bg-white/10 backdrop-blur-sm border border-white/20 group"
-                >
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={hobby.image || "/placeholder.svg"}
-                      alt={hobby.name}
-                      width={700}
-                      height={350}
-                      className="w-full h-[350px] object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div
-                      className={`absolute top-4 left-4 w-12 h-12 rounded-full bg-gradient-to-r ${hobby.color} flex items-center justify-center shadow-lg`}
-                    >
-                      <Icon />
-                    </div>
-                  </div>
-
-                  <CardHeader>
-                    <CardTitle className="text-xl group-hover:text-blue-400 transition-colors text-white">
-                      {hobby.name}
-                    </CardTitle>
-                    <CardDescription className="leading-relaxed text-blue-100">{hobby.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              )
-            })}
+            {hobbies.map((hobby, index) => (
+              <figure key={index} className="border border-line bg-paper p-3">
+                <Image
+                  src={hobby.image || "/placeholder.svg"}
+                  alt={hobby.name}
+                  width={700}
+                  height={350}
+                  className="w-full h-[320px] object-cover border border-line"
+                />
+                <figcaption className="pt-3 pb-1 px-1 font-mono text-sm text-ink">
+                  {hobby.name}
+                  {hobby.description ? <span className="text-ink-soft"> — {hobby.description}</span> : null}
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
       </section>
@@ -1513,13 +1221,14 @@ export default function Portfolio() {
       {/* Music Section — vinyl player with my own recordings */}
       <section
         id="music"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"
+        className="py-24 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Off the Record</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Yes, I also make music. Drop the needle — these are tracks I recorded myself.
+          <div className="mb-14">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">06 · Music</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">Off the record</h2>
+            <p className="text-lg text-ink-soft max-w-2xl">
+              Yes, I also make music. Drop the needle — I recorded these myself.
             </p>
           </div>
 
@@ -1530,49 +1239,31 @@ export default function Portfolio() {
       {/* Contact Section */}
       <section
         id="contact"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-900 via-slate-800 to-blue-900"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
       >
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">Let's Create Something Amazing</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Ready to bring your vision to life? Let's discuss our next project and create something extraordinary
-              together!
+          <div className="mb-14">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">07 · Contact</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">Get in touch</h2>
+            <p className="text-lg text-ink-soft max-w-2xl">
+              Flip through the rolodex — email is the fastest way to reach me, and I actually reply.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <h3 className="text-3xl font-bold text-white">Get in Touch</h3>
-                <p className="text-lg text-blue-100 leading-relaxed">
-                  Whether you're a startup looking to build your MVP or an enterprise seeking to innovate, I'm here to
-                  help transform your ideas into reality.
-                </p>
-              </div>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Rolodex — flip through contact cards */}
+            <Rolodex />
 
-              {/* Rolodex — flip through contact cards */}
-              <Rolodex />
-
-              <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 p-6 rounded-xl border border-blue-400/30 backdrop-blur-sm">
-                <h4 className="font-bold text-white mb-2">Quick Response Guarantee</h4>
-                <p className="text-blue-100 text-sm">
-                  I typically respond to all inquiries within 24 hours. For urgent projects, feel free to mention it in
-                  your message.
-                </p>
-              </div>
-            </div>
-
-            {/* Right: Add NBA Store image */}
-            <div className="flex items-center justify-center">
+            <figure className="justify-self-center">
               <Image
                 src="/untitled folder 2/nbastore.jpeg"
-                alt="NBA Store"
+                alt="Me at the NBA Store"
                 width={500}
                 height={500}
-                className="rounded-2xl shadow-2xl object-cover max-w-full h-auto"
+                className="border border-line object-cover max-w-full h-auto"
               />
-            </div>
+              <figcaption className="pt-2 font-mono text-xs text-ink-soft">NBA Store, New York.</figcaption>
+            </figure>
           </div>
         </div>
       </section>
@@ -1580,13 +1271,14 @@ export default function Portfolio() {
       {/* Visitor Map — every visitor drops a pin */}
       <section
         id="visitors"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900"
+        className="py-24 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-5xl font-bold text-white mb-6">You Were Here</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
-              Everyone who visits this site leaves a mark. Here&apos;s where the last few hundred visitors pinged in from.
+          <div className="mb-12">
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">08 · Visitors</div>
+            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">You were here</h2>
+            <p className="text-lg text-ink-soft max-w-2xl">
+              Everyone who visits leaves a pin. Spin the globe — here&apos;s where the last few hundred people came from.
             </p>
           </div>
 
@@ -1595,18 +1287,14 @@ export default function Portfolio() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-t border-blue-500/20">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-indigo-900/20"></div>
-        <div className="max-w-7xl mx-auto relative">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div className="md:col-span-2">
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-4">
+      <footer className="bg-paper-2 border-t border-line py-14 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid gap-10 md:grid-cols-3 mb-10">
+            <div>
+              <div className="font-display text-2xl font-semibold text-ink mb-3">
                 Sriram Natarajan
               </div>
-              <p className="text-blue-100 mb-6 leading-relaxed max-w-md">
-                
-              </p>
-              <div className="flex space-x-4">
+              <div className="flex gap-4">
                 {[
                   { icon: Github, href: "https://github.com/Sriramnat100", label: "GitHub" },
                   { icon: Linkedin, href: "https://www.linkedin.com/in/sriramnat/", label: "LinkedIn" },
@@ -1614,7 +1302,7 @@ export default function Portfolio() {
                   <Link
                     key={index}
                     href={social.href}
-                    className="w-10 h-10 bg-slate-800 hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 border border-blue-500/20"
+                    className="text-ink-soft hover:text-accent transition-colors"
                     aria-label={social.label}
                   >
                     <social.icon className="w-5 h-5" />
@@ -1624,11 +1312,11 @@ export default function Portfolio() {
             </div>
 
             <div>
-              <h4 className="font-bold text-white mb-4">Quick Links</h4>
+              <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Index</h4>
               <ul className="space-y-2">
-                {["About", "Projects", "Skills", "Contact"].map((link) => (
+                {["About", "Projects", "Skills", "Music", "Contact"].map((link) => (
                   <li key={link}>
-                    <a href={link === 'About' ? '/#' : `#${link.toLowerCase()}`} className="text-blue-200 hover:text-blue-400 transition-colors">
+                    <a href={link === 'About' ? '/#' : `#${link.toLowerCase()}`} className="text-ink-soft hover:text-accent transition-colors">
                       {link}
                     </a>
                   </li>
@@ -1637,19 +1325,17 @@ export default function Portfolio() {
             </div>
 
             <div>
-              <h4 className="font-bold text-white mb-4">Services</h4>
-              <ul className="space-y-2 text-blue-200">
-                <li>Full-Stack Development</li>
-                <li>Backend & APIs</li>
-                <li>AI/ML Solutions</li>
-                <li>Cloud & DevOps</li>
-              </ul>
+              <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Colophon</h4>
+              <p className="text-ink-soft text-sm leading-relaxed max-w-xs">
+                Designed and built by me with Next.js, set in Fraunces and IBM Plex.
+                The globe, vinyl, and rolodex are hand-rolled — go play with them.
+              </p>
             </div>
           </div>
 
-          <div className="border-t border-slate-800 pt-8 text-center">
-            <p className="text-blue-200">
-              © 2026 Sriram Natarajan. All rights reserved. Built with Next.js and deployed on Vercel.
+          <div className="border-t border-line pt-6">
+            <p className="font-mono text-xs text-ink-soft">
+              © 2026 Sriram Natarajan · Champaign–Fremont
             </p>
           </div>
         </div>

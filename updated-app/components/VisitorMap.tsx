@@ -558,7 +558,7 @@ export default function VisitorMap() {
     <div>
       <div
         ref={wrapRef}
-        className="relative flex w-full items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-slate-950/60 py-8 shadow-2xl"
+        className="relative flex w-full items-center justify-center overflow-hidden border border-line bg-slate-950 py-8 shadow-sm"
       >
         {/* Faint starfield behind the globe */}
         <div
@@ -629,12 +629,12 @@ export default function VisitorMap() {
 
       {/* Caption row */}
       <div className="mt-5 flex flex-col items-center justify-between gap-3 sm:flex-row">
-        <div className="flex items-center gap-2 text-sm text-blue-200">
-          <MapPin className="h-4 w-4 text-orange-400" />
+        <div className="flex items-center gap-2 text-sm text-ink-soft">
+          <MapPin className="h-4 w-4 text-accent" />
           {you?.city ? (
             <span>
               {precise ? "Your pin is on your exact spot in" : "You just dropped a pin from"}{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-ink">
                 {[you.city, you.country].filter(Boolean).join(", ")}
               </span>
             </span>
@@ -647,21 +647,21 @@ export default function VisitorMap() {
             <button
               onClick={dropExactPin}
               disabled={locating}
-              className="flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium text-cyan-200 transition-colors hover:bg-cyan-500/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 border border-accent/40 px-4 py-1.5 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-paper disabled:opacity-50"
             >
               <LocateFixed className={`h-4 w-4 ${locating ? "animate-spin" : ""}`} />
               {locating ? "Locating…" : "Pin my exact spot"}
             </button>
           )}
-          <div className="text-sm text-blue-300/70">
-            <span className="font-semibold text-cyan-300">{pings.length}</span> recent pins ·{" "}
-            <span className="font-semibold text-cyan-300">{uniqueCountries}</span>{" "}
+          <div className="font-mono text-sm text-ink-soft">
+            <span className="font-semibold text-accent">{pings.length}</span> pins ·{" "}
+            <span className="font-semibold text-accent">{uniqueCountries}</span>{" "}
             {uniqueCountries === 1 ? "country" : "countries"}
           </div>
         </div>
       </div>
       {locError && (
-        <div className="mt-2 text-center text-xs text-blue-300/60 sm:text-right">{locError}</div>
+        <div className="mt-2 text-center text-xs text-ink-soft/80 sm:text-right">{locError}</div>
       )}
     </div>
   );

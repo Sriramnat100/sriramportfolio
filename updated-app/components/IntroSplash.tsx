@@ -700,7 +700,7 @@ export default function IntroSplash() {
 
       {/* Name (with 3D tilt wrapper) */}
       <div ref={tiltRef} className="relative z-10 will-change-transform pointer-events-none">
-        <h1 className="pointer-events-auto cursor-default px-6 text-center font-extrabold leading-none tracking-tight text-5xl sm:text-7xl lg:text-9xl bg-gradient-to-r from-blue-300 via-cyan-200 to-blue-400 bg-clip-text text-transparent bg-[length:200%_200%] animate-intro-name transition-all duration-300 hover:bg-none hover:text-white hover:[text-shadow:0_0_28px_rgba(186,230,253,0.95),0_0_56px_rgba(56,189,248,0.65)]">
+        <h1 className="pointer-events-auto cursor-default px-6 text-center font-display font-medium leading-none tracking-tight text-5xl sm:text-7xl lg:text-9xl text-[#f2ede1] animate-intro-name transition-all duration-300 hover:[text-shadow:0_0_28px_rgba(186,230,253,0.95),0_0_56px_rgba(56,189,248,0.65)]">
           Sriram Natarajan
         </h1>
       </div>
@@ -724,7 +724,7 @@ export default function IntroSplash() {
         className="group absolute bottom-10 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center text-blue-200/70 transition-colors hover:text-cyan-300 animate-intro-cue"
         aria-label="Scroll down"
       >
-        <span className="mb-2 text-xs uppercase tracking-[0.3em]">Scroll</span>
+        <span className="mb-2 font-mono text-xs uppercase tracking-[0.3em]">Scroll</span>
         <ChevronDown className="h-6 w-6 animate-bounce" />
       </button>
     </section>

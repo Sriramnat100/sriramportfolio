@@ -171,17 +171,17 @@ export default function Rolodex() {
       <div className="mt-6 flex items-center justify-center gap-3">
         <button
           onClick={() => flip(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-blue-100 transition-colors hover:bg-white/20"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent"
           aria-label="Previous card"
         >
           <ChevronUp className="h-5 w-5" />
         </button>
-        <div className="text-xs uppercase tracking-[0.25em] text-blue-300/60">
-          flip · next up: <span className="text-blue-200">{peek.label}</span>
+        <div className="font-mono text-xs uppercase tracking-[0.25em] text-ink-soft">
+          flip · next up: <span className="text-ink">{peek.label}</span>
         </div>
         <button
           onClick={() => flip(1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-blue-100 transition-colors hover:bg-white/20"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent"
           aria-label="Next card"
         >
           <ChevronDown className="h-5 w-5" />

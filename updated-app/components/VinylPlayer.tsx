@@ -200,7 +200,7 @@ export default function VinylPlayer() {
           <button
             onClick={() => selectTrack((index - 1 + TRACKS.length) % TRACKS.length)}
             disabled={!ready}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-blue-100 transition-colors hover:bg-white/20 disabled:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
             aria-label="Previous track"
           >
             <SkipBack className="h-5 w-5" />
@@ -208,7 +208,7 @@ export default function VinylPlayer() {
           <button
             onClick={togglePlay}
             disabled={!ready}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transition-transform hover:scale-105 disabled:opacity-40"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-paper shadow transition-colors hover:bg-ink disabled:opacity-40"
             aria-label={playing ? "Pause" : "Play"}
           >
             {playing ? <Pause className="h-6 w-6" /> : <Play className="ml-0.5 h-6 w-6" />}
@@ -216,7 +216,7 @@ export default function VinylPlayer() {
           <button
             onClick={() => selectTrack((index + 1) % TRACKS.length)}
             disabled={!ready}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-blue-100 transition-colors hover:bg-white/20 disabled:opacity-40"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent disabled:opacity-40"
             aria-label="Next track"
           >
             <SkipForward className="h-5 w-5" />
@@ -224,14 +224,14 @@ export default function VinylPlayer() {
         </div>
 
         {/* Progress */}
-        <div className="mt-4 flex items-center gap-3 text-xs text-blue-200">
+        <div className="mt-4 flex items-center gap-3 font-mono text-xs text-ink-soft">
           <span className="w-10 text-right tabular-nums">{fmt(position)}</span>
           <div
             onClick={seek}
-            className="group relative h-2 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/10"
+            className="group relative h-2 flex-1 cursor-pointer overflow-hidden rounded-full bg-line"
           >
             <div
-              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 transition-[width] duration-150"
+              className="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-150"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
@@ -240,23 +240,23 @@ export default function VinylPlayer() {
       </div>
 
       {/* Tracklist sleeve */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur-sm">
+      <div className="border border-line bg-paper p-6 sm:p-8">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-400">Side A</div>
-            <div className="mt-1 text-2xl font-bold text-white">Tracks I&apos;ve Recorded</div>
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent">Side A</div>
+            <div className="mt-1 font-display text-2xl font-semibold text-ink">Tracks I&apos;ve recorded</div>
           </div>
           <a
             href={PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-orange-400/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-200 transition-colors hover:bg-orange-500/20"
+            className="flex shrink-0 items-center gap-1.5 border border-accent/40 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-paper"
           >
             SoundCloud <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </div>
 
-        <ol className="space-y-1">
+        <ol className="divide-y divide-line">
           {TRACKS.map((t, i) => {
             const active = i === index;
             return (
@@ -264,26 +264,26 @@ export default function VinylPlayer() {
                 <button
                   onClick={() => (active ? togglePlay() : selectTrack(i))}
                   disabled={!ready}
-                  className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left transition-colors disabled:opacity-40 ${
+                  className={`flex w-full items-center gap-4 px-3 py-3 text-left transition-colors disabled:opacity-40 ${
                     active
-                      ? "bg-orange-500/15 text-white"
-                      : "text-blue-100 hover:bg-white/10"
+                      ? "bg-accent/10 text-ink"
+                      : "text-ink-soft hover:bg-paper-2"
                   }`}
                 >
-                  <span className={`w-6 text-sm tabular-nums ${active ? "text-orange-400" : "text-blue-300/60"}`}>
+                  <span className={`w-6 font-mono text-sm tabular-nums ${active ? "text-accent" : "text-ink-soft/60"}`}>
                     {active && playing ? (
                       // Tiny equalizer
                       <span className="flex h-4 items-end gap-[2px]">
-                        <span className="w-[3px] animate-[eq1_0.8s_ease-in-out_infinite] rounded-sm bg-orange-400" />
-                        <span className="w-[3px] animate-[eq2_0.6s_ease-in-out_infinite] rounded-sm bg-orange-400" />
-                        <span className="w-[3px] animate-[eq3_1s_ease-in-out_infinite] rounded-sm bg-orange-400" />
+                        <span className="w-[3px] animate-[eq1_0.8s_ease-in-out_infinite] rounded-sm bg-accent" />
+                        <span className="w-[3px] animate-[eq2_0.6s_ease-in-out_infinite] rounded-sm bg-accent" />
+                        <span className="w-[3px] animate-[eq3_1s_ease-in-out_infinite] rounded-sm bg-accent" />
                       </span>
                     ) : (
                       String(i + 1).padStart(2, "0")
                     )}
                   </span>
-                  <span className={`flex-1 font-medium ${active ? "font-semibold" : ""}`}>{t.title}</span>
-                  <span className="text-sm tabular-nums text-blue-300/60">{fmt(t.duration)}</span>
+                  <span className={`flex-1 font-medium ${active ? "font-semibold text-ink" : ""}`}>{t.title}</span>
+                  <span className="font-mono text-sm tabular-nums text-ink-soft/60">{fmt(t.duration)}</span>
                 </button>
               </li>
             );

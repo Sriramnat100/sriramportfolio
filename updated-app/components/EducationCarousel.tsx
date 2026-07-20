@@ -35,10 +35,7 @@ export default function EducationCarousel() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Soft gradient glow behind the frame */}
-      <div className="absolute -inset-1 rounded-3xl bg-gradient-to-tr from-blue-500/40 via-cyan-400/30 to-orange-400/40 opacity-60 blur transition-opacity duration-500 group-hover:opacity-90" />
-
-      <div className="relative w-full aspect-[4/5] lg:aspect-auto lg:h-full overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl">
+      <div className="relative w-full aspect-[4/5] lg:aspect-auto lg:h-full overflow-hidden border border-line bg-paper shadow-sm">
         {IMAGES.map((img, i) => (
           <Image
             key={img.src}
