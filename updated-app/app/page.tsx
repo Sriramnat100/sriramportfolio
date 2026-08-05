@@ -14,7 +14,6 @@ import {
   ExternalLink,
   Code,
   Database,
-  Globe,
   Smartphone,
   Brain,
   Zap,
@@ -31,7 +30,6 @@ import {
   Rocket,
   Camera,
   Gamepad2,
-  Music,
   Plane,
   BookOpen,
   Coffee,
@@ -40,13 +38,24 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import IntroSplash from "@/components/IntroSplash"
+import dynamic from "next/dynamic"
 import EducationCarousel from "@/components/EducationCarousel"
-import VinylPlayer from "@/components/VinylPlayer"
-import VisitorMap from "@/components/VisitorMap"
 import Rolodex from "@/components/Rolodex"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@supabase/supabase-js"
+
+// Three.js/WebGL needs a client-only render — no SSR — and the fallback keeps
+// the paper background + name in place while the 3D bundle loads.
+const Hero3D = dynamic(() => import("@/components/Hero3D"), {
+  ssr: false,
+  loading: () => (
+    <section className="relative flex h-screen w-full items-start justify-center overflow-hidden bg-paper px-6 pt-12 text-center sm:pt-16">
+      <h1 className="animate-intro-name font-mono text-3xl font-medium tracking-tight text-ink sm:text-6xl">
+        Hi, I&apos;m Sriram Natarajan
+      </h1>
+    </section>
+  ),
+})
 
 const supabaseBrowser = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -682,21 +691,6 @@ export default function Portfolio() {
         </div>
       )}
       <div className="min-h-screen bg-paper text-ink overflow-x-hidden">
-      {/* Intro splash animations */}
-      <style jsx global>{`
-        @keyframes intro-name {
-          0%   { opacity: 0; transform: translateY(28px) scale(0.94); filter: blur(14px); }
-          60%  { filter: blur(0); }
-          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-        }
-        @keyframes intro-fade-up {
-          0%   { opacity: 0; transform: translateY(16px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-intro-name { animation: intro-name 1.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
-        .animate-intro-cue  { animation: intro-fade-up 1s ease-out 2.2s both; }
-      `}</style>
-
       {/* Navigation */}
       <nav className={`fixed top-0 w-full bg-paper/95 backdrop-blur z-50 border-b border-line transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
         <div className="w-full px-6 sm:px-8 lg:px-12">
@@ -705,10 +699,10 @@ export default function Portfolio() {
               Sriram Natarajan
             </a>
             <div className="hidden md:flex items-center gap-7">
-              {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Music", "Contact"].map((item) => (
+              {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Contact"].map((item) => (
                 <a
                   key={item}
-                  href={item === "About" ? "/#" : `#${item.toLowerCase()}`}
+                  href={`#${item.toLowerCase()}`}
                   className="font-mono text-[13px] uppercase tracking-wider text-ink-soft hover:text-accent transition-colors border-b border-transparent hover:border-accent pb-0.5"
                 >
                   {item}
@@ -719,11 +713,11 @@ export default function Portfolio() {
         </div>
       </nav>
 
-      {/* Intro Splash — full-screen interactive name reveal */}
-      <IntroSplash />
+      {/* 3D hero — interactive diorama, click an object to jump to a section */}
+      <Hero3D />
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8">
+      <section id="about" className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -787,7 +781,7 @@ export default function Portfolio() {
             </div>
 
             <div className="relative">
-              <div className="relative w-full max-w-lg mx-auto lg:ml-20">
+              <div className="relative w-full max-w-lg mx-auto">
                 <div className="relative">
                   {loading || showGif ? (
                     <img src="/untitled folder 2/pandaForwardRoll.gif" alt="Loading..." className="w-[600px] h-[600px] rounded-full border border-line shadow-lg object-cover" />
@@ -1218,24 +1212,6 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Music Section — vinyl player with my own recordings */}
-      <section
-        id="music"
-        className="py-24 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">06 · Music</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">Off the record</h2>
-            <p className="text-lg text-ink-soft max-w-2xl">
-              Yes, I also make music. Drop the needle — I recorded these myself.
-            </p>
-          </div>
-
-          <VinylPlayer />
-        </div>
-      </section>
-
       {/* Contact Section */}
       <section
         id="contact"
@@ -1243,7 +1219,7 @@ export default function Portfolio() {
       >
         <div className="max-w-6xl mx-auto">
           <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">07 · Contact</div>
+            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">06 · Contact</div>
             <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">Get in touch</h2>
             <p className="text-lg text-ink-soft max-w-2xl">
               Flip through the rolodex — email is the fastest way to reach me, and I actually reply.
@@ -1259,30 +1235,11 @@ export default function Portfolio() {
                 src="/untitled folder 2/nbastore.jpeg"
                 alt="Me at the NBA Store"
                 width={500}
-                height={500}
-                className="border border-line object-cover max-w-full h-auto"
+                height={642}
+                className="border border-line max-w-full h-auto"
               />
-              <figcaption className="pt-2 font-mono text-xs text-ink-soft">NBA Store, New York.</figcaption>
             </figure>
           </div>
-        </div>
-      </section>
-
-      {/* Visitor Map — every visitor drops a pin */}
-      <section
-        id="visitors"
-        className="py-24 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-12">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">08 · Visitors</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">You were here</h2>
-            <p className="text-lg text-ink-soft max-w-2xl">
-              Everyone who visits leaves a pin. Spin the globe — here&apos;s where the last few hundred people came from.
-            </p>
-          </div>
-
-          <VisitorMap />
         </div>
       </section>
 
@@ -1314,9 +1271,9 @@ export default function Portfolio() {
             <div>
               <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Index</h4>
               <ul className="space-y-2">
-                {["About", "Projects", "Skills", "Music", "Contact"].map((link) => (
+                {["About", "Projects", "Skills", "Contact"].map((link) => (
                   <li key={link}>
-                    <a href={link === 'About' ? '/#' : `#${link.toLowerCase()}`} className="text-ink-soft hover:text-accent transition-colors">
+                    <a href={`#${link.toLowerCase()}`} className="text-ink-soft hover:text-accent transition-colors">
                       {link}
                     </a>
                   </li>
@@ -1328,7 +1285,7 @@ export default function Portfolio() {
               <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Colophon</h4>
               <p className="text-ink-soft text-sm leading-relaxed max-w-xs">
                 Designed and built by me with Next.js, set in Fraunces and IBM Plex.
-                The globe, vinyl, and rolodex are hand-rolled — go play with them.
+                The island and rolodex are hand-rolled — go play with them.
               </p>
             </div>
           </div>

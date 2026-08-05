@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Github, Linkedin, Mail, Music2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Github, Linkedin, Mail } from "lucide-react";
 
 const CARDS = [
   {
@@ -24,13 +24,6 @@ const CARDS = [
     href: "https://github.com/Sriramnat100",
     action: "Follow",
     icon: Github,
-  },
-  {
-    label: "SoundCloud",
-    value: "soundcloud.com/young_rahmel",
-    href: "https://soundcloud.com/young_rahmel",
-    action: "Listen",
-    icon: Music2,
   },
 ];
 

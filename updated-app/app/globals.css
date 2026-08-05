@@ -9,6 +9,7 @@
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
   --font-display: var(--font-fraunces);
+  --font-hero: var(--font-bricolage);
 
   /* Paper-and-ink palette (accent maps through shadcn's --accent below) */
   --color-paper: #f6f1e7;
@@ -120,6 +121,26 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Hero intro animations. These live here, in a real render-blocking
+   stylesheet, rather than in a <style jsx global> block inside page.tsx:
+   styled-jsx does not emit its global styles into the App Router's server
+   HTML, so the rules only appeared after hydration. The heading painted
+   once at full opacity with no rule matching its animate-* class, then
+   snapped to the keyframes' 0% state the instant the styles were injected
+   and faded in — the "flashes, disappears, then fades" effect. Defined
+   here, the animation is in the document's first paint. */
+@keyframes intro-name {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.94); filter: blur(14px); }
+  60%  { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes intro-fade-up {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-intro-name { animation: intro-name 1.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-intro-cue  { animation: intro-fade-up 1s ease-out 2.2s both; }
 
 @layer base {
   * {
