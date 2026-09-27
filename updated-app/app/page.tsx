@@ -2,110 +2,112 @@
 
 import type React from "react"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Github,
-  Linkedin,
-  Mail,
-  ExternalLink,
-  Code,
-  Database,
-  Smartphone,
-  Brain,
-  Zap,
-  Users,
-  Trophy,
-  Download,
-  Star,
-  Calendar,
-  MapPin,
-  Eye,
-  ChevronRight,
-  Play,
-  Clock,
-  Rocket,
-  Camera,
-  Gamepad2,
-  Plane,
-  BookOpen,
-  Coffee,
-  ChevronLeft,
-  ChevronDown,
-} from "lucide-react"
+import { Github, Linkedin, Mail, ExternalLink, ChevronDown } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import EducationCarousel from "@/components/EducationCarousel"
 import Rolodex from "@/components/Rolodex"
+import HeroTitle from "@/components/HeroTitle"
+import DioramaSection from "@/components/DioramaSection"
+import {
+  LighthouseObject,
+  TempleObject,
+  TreasureChestObject,
+  LaunchPadObject,
+  ToolsObject,
+  BasketballHoopObject,
+  PhoneBoothObject,
+} from "@/components/hero3d/SceneObjects"
 import { useState, useEffect, useRef } from "react"
 import { createClient } from "@supabase/supabase-js"
 
 // Three.js/WebGL needs a client-only render — no SSR — and the fallback keeps
-// the paper background + name in place while the 3D bundle loads.
+// the paper background + name plate in place while the 3D bundle loads.
 const Hero3D = dynamic(() => import("@/components/Hero3D"), {
   ssr: false,
   loading: () => (
-    <section className="relative flex h-screen w-full items-start justify-center overflow-hidden bg-paper px-6 pt-12 text-center sm:pt-16">
-      <h1 className="animate-intro-name font-mono text-3xl font-medium tracking-tight text-ink sm:text-6xl">
-        Hi, I&apos;m Sriram Natarajan
-      </h1>
+    <section className="relative flex h-screen w-full items-start justify-center overflow-hidden bg-paper px-6 pt-10 text-center sm:pt-12">
+      <HeroTitle animate />
     </section>
   ),
 })
+
+// The one shared WebGL canvas every section's display box renders into.
+const DioramaCanvas = dynamic(() => import("@/components/DioramaCanvas"), { ssr: false })
 
 const supabaseBrowser = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+const NAV = [
+  { label: "About", id: "about" },
+  { label: "Education", id: "education" },
+  { label: "Experience", id: "experience" },
+  { label: "Projects", id: "projects" },
+  { label: "Skills", id: "skills" },
+  { label: "Hobbies", id: "hobbies" },
+  { label: "Contact", id: "contact" },
+]
+
+// Small stamped chip for a technology / tool name.
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-block border-2 border-ink bg-paper px-2 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-ink">
+      {children}
+    </span>
+  )
+}
+
+// Ink button / link — the only button style on the page.
+const BTN =
+  "toy-shadow-sm inline-flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 font-mono text-xs font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-accent disabled:opacity-60"
+const BTN_GHOST =
+  "inline-flex items-center gap-2 border-2 border-ink bg-paper px-4 py-2 font-mono text-xs font-medium uppercase tracking-[0.15em] text-ink transition-colors hover:bg-ink hover:text-paper"
+
 // Expandable course card (Education section)
 type Course = { code: string; title: string; tools: string[]; description: string; skills: string[] };
 function CourseCard({ course }: { course: Course }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-line bg-paper overflow-hidden transition-colors hover:border-accent/50">
+    <div className={`border-2 border-ink bg-paper transition-shadow ${open ? "toy-shadow-sm" : ""}`}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-4 p-5 text-left"
+        className="flex w-full items-center justify-between gap-4 p-4 text-left"
         aria-expanded={open}
       >
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="shrink-0 font-mono text-xs font-medium text-accent border border-accent/40 px-2.5 py-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="shrink-0 bg-ink px-2 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-paper">
             {course.code}
           </span>
           <span className="font-semibold text-ink">{course.title}</span>
         </div>
-        <ChevronDown className={`w-5 h-5 text-ink-soft shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-5 w-5 shrink-0 text-ink transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
         <div className="overflow-hidden">
-          <div className="px-5 pb-5 space-y-4">
-            <p className="text-ink-soft text-sm leading-relaxed">{course.description}</p>
+          <div className="space-y-4 border-t-2 border-dashed border-ink/40 px-4 pb-5 pt-4">
+            <p className="text-sm leading-relaxed text-ink-soft">{course.description}</p>
             <div>
-              <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">Tools &amp; Languages</div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Tools &amp; Languages</div>
               {course.tools.length ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {course.tools.map((tool) => (
-                    <span key={tool} className="font-mono text-ink border border-line bg-paper-2 px-2.5 py-1 text-xs">
-                      {tool}
-                    </span>
+                    <Chip key={tool}>{tool}</Chip>
                   ))}
                 </div>
               ) : (
-                <span className="text-ink-soft/80 text-sm italic">Theory-focused — no coding</span>
+                <span className="text-sm italic text-ink-soft/80">Theory-focused — no coding</span>
               )}
             </div>
             <div>
-              <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">Skills Learned</div>
-              <div className="flex flex-wrap gap-2">
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Skills Learned</div>
+              <div className="flex flex-wrap gap-1.5">
                 {course.skills.map((skill) => (
-                  <span key={skill} className="font-mono text-ink-soft border border-line px-2.5 py-1 text-xs">
-                    {skill}
-                  </span>
+                  <Chip key={skill}>{skill}</Chip>
                 ))}
               </div>
             </div>
@@ -116,70 +118,7 @@ function CourseCard({ course }: { course: Course }) {
   );
 }
 
-// Animated Counter Component
-function AnimatedCounter({ end, duration = 2000, suffix = "" }: { end: number; duration?: number; suffix?: string }) {
-  const [count, setCount] = useState(0)
-
-  useEffect(() => {
-    let startTime: number
-    let animationFrame: number
-
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime
-      const progress = Math.min((currentTime - startTime) / duration, 1)
-      setCount(Math.floor(progress * end))
-
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate)
-      }
-    }
-
-    animationFrame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animationFrame)
-  }, [end, duration])
-
-  return (
-    <span>
-      {count}
-      {suffix}
-    </span>
-  )
-}
-
-// Define Skill type
-interface Skill {
-  name: string;
-  level: number;
-  icon: any;
-  projects: number;
-}
-
-// Typing effect for hero headline
-function useTypingEffect(text: string, speed: number = 60) {
-  const [displayed, setDisplayed] = useState("");
-  const hasTyped = useRef(false);
-
-  useEffect(() => {
-    if (hasTyped.current) return; // Only run once, ever
-    setDisplayed("");
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplayed((prev) => prev + text[i]);
-      i++;
-      if (i >= text.length) {
-        clearInterval(interval);
-        hasTyped.current = true;
-      }
-    }, speed);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line
-  }, []); // Only run on mount
-
-  return hasTyped.current ? text : displayed;
-}
-
 export default function Portfolio() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [prompt, setPrompt] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -196,6 +135,11 @@ export default function Portfolio() {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  // The freshly generated headshot, so the "ready" notification can jump
+  // straight to it. Back when the headshot was the page's first section,
+  // scrollTo(top: 0) landed on it; the 3D island now owns that first
+  // viewport, so scrolling to the top shows the island instead.
+  const headshotRef = useRef<HTMLDivElement>(null);
 
   // Hide the nav while the intro splash is on screen; reveal it on scroll.
   useEffect(() => {
@@ -212,11 +156,13 @@ export default function Portfolio() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const isoToday = today.toISOString();
-      const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
-      const data = await res.json();
-      if (isMounted) {
-        console.log('Fetched images today:', data.count);
-        setImagesToday(data.count || 0);
+      try {
+        const res = await fetch('/api/images-today?since=' + encodeURIComponent(isoToday));
+        const data = await res.json();
+        if (isMounted) setImagesToday(data.count || 0);
+      } catch (err) {
+        // Leave the counter at 0 — the API will still enforce the cap.
+        console.error('Could not fetch today\'s generation count:', err);
       }
     }
     fetchImagesToday();
@@ -226,14 +172,6 @@ export default function Portfolio() {
   }, []);
 
   const imagesLeft = Math.max(0, maxImagesPerDay - imagesToday);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsSubmitting(false)
-    alert("Message sent! I'll get back to you soon.")
-  }
 
   // Shared image-generation routine. `verifiedFor` is an email we've already
   // confirmed (either via a one-time code, or because it's already in the DB).
@@ -247,8 +185,13 @@ export default function Portfolio() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       });
-      const genData = await genRes.json();
-      const imageUrl = genData.imageUrl;
+      const genData = await genRes.json().catch(() => ({}));
+      // A failed generation used to fall through here with imageUrl undefined
+      // and still announce "Image ready!" — check the response for real.
+      if (!genRes.ok || !genData.imageUrl) {
+        throw new Error(genData.details || genData.error || `Generation failed (${genRes.status})`);
+      }
+      const imageUrl: string = genData.imageUrl;
 
       await fetch('/api/submit-generation', {
         method: 'POST',
@@ -345,10 +288,9 @@ export default function Portfolio() {
   };
 
   const stats = [
-    { label: "Hackathon Wins", value: 4 },
-    { label: "Years Experience", value: 7, suffix: "+" },
-    { label: "Users Reached (Across Projects)", value: 1000, suffix: "+" },
-   
+    { label: "Hackathon wins", value: "4" },
+    { label: "Years building", value: "7+" },
+    { label: "Users reached", value: "1000+" },
   ]
 
   const experience = [
@@ -356,14 +298,14 @@ export default function Portfolio() {
       title: "Forward Deployed Software Engineer Intern",
       company: "C3 AI",
       logo: "/logos/c3l.png",
-      period: "May 2026 - Present",
+      period: "May 2026 - August 2026",
       location: "Redwood City, CA",
       description: [
         "-Member of Federal Team"
       ],
       technologies: ["Python", "SQL", "C3 AI Platform"]
     },
-    
+
     {
       title: "Embedded Software Engineer Intern",
       company: "Rivian",
@@ -385,7 +327,7 @@ export default function Portfolio() {
       location: "Mountain View, CA",
       description: [
         "-Contributed to AI-driven health & wellness platform (1000+ users)"
-       
+
       ],
       technologies: ["Python", "Flask", "AWS", "OpenAI API", "React"]
     },
@@ -438,7 +380,7 @@ export default function Portfolio() {
       technologies: ["C++", "Arduino", "AWS RDS", "3D Printing", "ROS", "Gazebo"],
       demo: "https://v0-lerobot-arm.vercel.app/"
     },
-    
+
   ]
 
   const projects = [
@@ -507,7 +449,7 @@ export default function Portfolio() {
       image: "/untitled folder 2/illiniresearch.png"
     },
     {
-      title: "Beyond Terra",
+      title: "Seed Drone",
       period: "Sep 2023 - Jul 2024",
       description: [
         "Engineered a real-time embedded seed-dispersing sub-system in C++ using Arduino microcontrollers and servo motors. ",
@@ -517,10 +459,10 @@ export default function Portfolio() {
       technologies: ["C++", "Arduino", "AWS RDS", "3D Printing"],
       featured: false,
       category: "IoT/Embedded",
-      longDescription: "Beyond Terra is an innovative drone-based system for automated seed dispersal and environmental monitoring.",
+      longDescription: "Seed Drone is an innovative drone-based system for automated seed dispersal and environmental monitoring.",
       stats: { users: "N/A", rating: 4.5, downloads: "N/A" },
       github: "#",
-      demo: "https://drive.google.com/drive/u/1/folders/1qRmqG-BfqBlJLqzdnd1UOSWiOVFkGsKW",
+      demo: "https://seedrone.vercel.app",
       image: "/untitled folder 2/btlogo.png"
     },
     {
@@ -541,27 +483,9 @@ export default function Portfolio() {
   ]
 
   const hobbies = [
-    {
-      name: "Running",
-      description: "",
-      icon: () => <span role="img" aria-label="Running">🏃‍♂️</span>,
-      image: "/untitled folder 2/runningpic.jpg",
-      color: "",
-    },
-    {
-      name: "Basketball",
-      description: "",
-      icon: () => <span role="img" aria-label="Basketball">🏀</span>,
-      image:  "/untitled folder 2/balltuff.png",
-      color: "",
-    },
-    {
-      name: "Music",
-      description: "",
-      icon: () => <span role="img" aria-label="Music">🎤</span>,
-      image: "/untitled folder 2/uziconcert.jpg",
-      color: "",
-    },
+    { name: "Running", image: "/untitled folder 2/runningpic.jpg", tilt: "-rotate-2" },
+    { name: "Basketball", image: "/untitled folder 2/balltuff.png", tilt: "rotate-1" },
+    { name: "Music", image: "/untitled folder 2/uziconcert.jpg", tilt: "-rotate-1" },
   ]
 
   // Grouped plainly — no made-up proficiency percentages.
@@ -572,27 +496,13 @@ export default function Portfolio() {
     { label: "Tools", items: ["Git / GitHub", "Arduino", "ROS", "3D Printing"] },
   ]
 
-  const name = "Sriram Natarajan";
-  const contact = {
-    phone: "510-755-7614",
-    email: "sriram6@illinois.edu",
-    location: "Fremont, California",
-    citizenship: "US Citizen",
-    linkedin: "https://www.linkedin.com/in/sriramnat/"
-  };
-  const about = `Hi! I'm Sriram Natarajan, a Computer Science and Linguistics major at the University of Illinois Urbana-Champaign, also pursuing a minor in Data Science. I love building things that sit at the intersection of software, machine learning, and real-world impact. I'm especially excited by projects that blend AI with practical problem-solving, and I'm always down to collaborate, learn something new, or chase an idea that feels a little too ambitious.`;
+  const about = `I'm a Computer Science and Linguistics major at the University of Illinois Urbana-Champaign, also pursuing a minor in Data Science. I love building things that sit at the intersection of software, machine learning, and real-world impact. I'm especially excited by projects that blend AI with practical problem-solving, and I'm always down to collaborate, learn something new, or chase an idea that feels a little too ambitious.`;
   const education = {
     school: "University of Illinois, Urbana-Champaign",
     grad: "Expected Graduation: 05/2028",
     major: "Computer Science + Linguistics",
     minor: "Data Science",
     gpa: "3.85/4.0",
-    coursework: [
-      "Intro to Algorithms & Models of Computation",
-      "Data Structures & Algorithms (C++)",
-      "Computer Architecture (C++)",
-      "Database Systems (SQL)",
-    ]
   };
 
   const courses = [
@@ -662,23 +572,28 @@ export default function Portfolio() {
     },
   ];
 
-  const typedText = useTypingEffect("Hi, I'm Sriram Natarajan", 60);
-  const isComplete = typedText === "Hi, I'm Sriram Natarajan";
-  const namePart = isComplete ? "Sriram Natarajan" : typedText.replace("Hi, I'm ", "");
-  const prefixPart = isComplete ? "Hi, I'm " : typedText.replace(namePart, "");
+  const featuredProjects = projects.filter((p) => p.featured)
+  const otherProjects = projects.filter((p) => !p.featured)
 
   return (
     <>
       {/* Notification Popup */}
       {showNotification && (
-        <div className="fixed top-6 right-6 z-[9999] flex items-center gap-4 border border-line bg-paper px-5 py-3.5 text-ink shadow-lg">
-          <span className="text-sm font-medium">{notificationMessage}</span>
+        <div className="toy-shadow fixed right-6 top-6 z-[9999] flex items-center gap-4 border-[3px] border-ink bg-paper px-5 py-3.5 text-ink">
+          <span className="font-mono text-xs uppercase tracking-[0.15em]">{notificationMessage}</span>
           {notificationMessage === "Image ready! 🎉" && (
             <button
-              className="bg-ink px-3 py-1.5 text-sm text-paper transition-colors hover:bg-accent"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="border-2 border-ink bg-ink px-3 py-1.5 font-mono text-xs uppercase tracking-[0.15em] text-paper transition-colors hover:bg-accent"
+              onClick={() =>
+                headshotRef.current?.scrollIntoView({
+                  block: "center",
+                  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                    ? "auto"
+                    : "smooth",
+                })
+              }
             >
-              Scroll to top
+              See it
             </button>
           )}
           <button
@@ -690,591 +605,486 @@ export default function Portfolio() {
           </button>
         </div>
       )}
-      <div className="min-h-screen bg-paper text-ink overflow-x-hidden">
+
+      <DioramaCanvas />
+
+      <div className="min-h-screen overflow-x-hidden bg-paper text-ink">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full bg-paper/95 backdrop-blur z-50 border-b border-line transition-all duration-700 ${scrolled ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"}`}>
-        <div className="w-full px-6 sm:px-8 lg:px-12">
-          <div className="flex justify-between items-center py-3.5">
-            <a href="/#" className="font-display text-xl font-semibold tracking-tight text-ink">
-              Sriram Natarajan
-            </a>
-            <div className="hidden md:flex items-center gap-7">
-              {["About", "Education", "Experience", "Projects", "Skills", "Hobbies", "Contact"].map((item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="font-mono text-[13px] uppercase tracking-wider text-ink-soft hover:text-accent transition-colors border-b border-transparent hover:border-accent pb-0.5"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
+      <nav className={`fixed top-0 z-50 w-full border-b-[3px] border-ink bg-paper transition-transform duration-500 ${scrolled ? "translate-y-0" : "-translate-y-full"}`}>
+        <div className="flex items-center justify-between gap-6 px-4 py-2 sm:px-6 lg:px-8">
+          <Link href="/#" className="font-display text-2xl uppercase leading-none tracking-wide text-ink">
+            Sriram Natarajan
+          </Link>
+          <div className="hidden items-center gap-1 md:flex">
+            {NAV.map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink transition-colors hover:bg-ink hover:text-paper"
+              >
+                {item.label}
+              </a>
+            ))}
           </div>
         </div>
       </nav>
 
-      {/* 3D hero — interactive diorama, click an object to jump to a section */}
+      {/* 3D hero — interactive archipelago, click an island to jump to a section */}
       <Hero3D />
 
-      {/* Hero Section */}
-      <section id="about" className="relative pt-28 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                {/* <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-200 text-sm font-medium border border-blue-400/30 shadow-sm backdrop-blur-sm">
-                  <Star className="w-4 h-4 mr-2 animate-pulse" />
-                  Available for new opportunities
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </div> */}
+      {/* ------------------------------------------------------------------ */}
+      {/* 01 · About — the lighthouse                                          */}
+      <DioramaSection id="about" index={1} title="About" tagline="Lighthouse" Object={LighthouseObject}>
+        <p className="max-w-3xl text-2xl font-medium leading-snug text-ink sm:text-3xl">
+          I build things at the intersection of software, machine learning, and real-world impact.
+        </p>
+        <p className="mt-6 max-w-2xl text-base leading-relaxed text-ink-soft sm:text-lg">{about}</p>
 
-                <div className="space-y-5">
-                  <h1 className="font-display text-5xl lg:text-7xl font-medium text-ink leading-[1.05] tracking-tight">
-                    {prefixPart}<span className="italic text-accent">{namePart}</span>
-                  </h1>
-                  <div className="font-mono text-sm uppercase tracking-wider text-ink-soft">
-                    Computer Science + Linguistics · Data Science minor · UIUC
-                  </div>
-                  <p className="text-lg text-ink-soft leading-relaxed max-w-2xl">
-                    {about}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="flex flex-wrap gap-x-10 gap-y-4 py-6 border-y border-line">
-                {stats.map((stat, index) => (
-                  <div key={index}>
-                    <div className="font-display text-3xl font-semibold text-ink">
-                      <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-                    </div>
-                    <div className="font-mono text-xs uppercase tracking-wider text-ink-soft mt-1">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-5">
-                <Button
-                  size="lg"
-                  className="rounded-none bg-ink text-paper hover:bg-accent transition-colors shadow-none"
-                  asChild
-                >
-                  <Link href="/#contact">
-                    <Mail className="w-5 h-5 mr-2" />
-                    Get in touch
-                  </Link>
-                </Button>
-                {[
-                  { icon: Github, href: "https://github.com/Sriramnat100", label: "GitHub" },
-                  { icon: Linkedin, href: "https://www.linkedin.com/in/sriramnat/", label: "LinkedIn" },
-                ].map((social, index) => (
-                  <Link
-                    key={index}
-                    href={social.href}
-                    className="text-ink-soft hover:text-accent transition-colors"
-                    aria-label={social.label}
-                  >
-                    <social.icon className="w-6 h-6" />
-                  </Link>
-                ))}
-              </div>
+        {/* Stat stickers */}
+        <div className="mt-10 flex flex-wrap gap-5">
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`toy-shadow-sm border-[3px] border-ink bg-paper px-5 py-3 ${i % 2 === 0 ? "-rotate-1" : "rotate-1"}`}
+            >
+              <div className="font-display text-4xl leading-none text-ink">{stat.value}</div>
+              <div className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-soft">{stat.label}</div>
             </div>
+          ))}
+        </div>
 
-            <div className="relative">
-              <div className="relative w-full max-w-lg mx-auto">
-                <div className="relative">
-                  {loading || showGif ? (
-                    <img src="/untitled folder 2/pandaForwardRoll.gif" alt="Loading..." className="w-[600px] h-[600px] rounded-full border border-line shadow-lg object-cover" />
-                  ) : (
-                  <Image
-                      src={headshotUrl}
-                    alt="Sriram Natarajan"
-                    width={600}
-                    height={600}
-                    className="relative rounded-full border border-line shadow-lg"
-                    onLoad={() => {
-                      // Image loaded successfully
-                    }}
-                  />
-                  )}
-                    </div>
-                  </div>
-              <div className="mt-8 flex flex-col items-center justify-center text-center">
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <h2 className="font-display text-2xl font-semibold text-ink mb-2">Working on it…</h2>
-                    <p className="text-ink-soft">Feel free to keep scrolling — I&apos;ll let you know when it&apos;s ready.</p>
-                </div>
-                ) : imagesLeft === 0 ? (
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <p className="text-ink-soft text-sm">Out of free generations for today — come back tomorrow.</p>
-              </div>
-                ) : showPrompt ? (
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <h2 className="font-display text-2xl font-semibold text-ink mb-2">You said:</h2>
-                    <p className="text-lg text-ink-soft italic">&ldquo;{restatedPrompt}&rdquo;</p>
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          <Link href="/#contact" className={BTN}>
+            <Mail className="h-4 w-4" />
+            Get in touch
+          </Link>
+          {[
+            { icon: Github, href: "https://github.com/Sriramnat100", label: "GitHub" },
+            { icon: Linkedin, href: "https://www.linkedin.com/in/sriramnat/", label: "LinkedIn" },
+          ].map((social) => (
+            <Link
+              key={social.label}
+              href={social.href}
+              className="flex h-10 w-10 items-center justify-center border-2 border-ink text-ink transition-colors hover:bg-ink hover:text-paper"
+              aria-label={social.label}
+            >
+              <social.icon className="h-5 w-5" />
+            </Link>
+          ))}
+        </div>
+
+        {/* Headshot + repaint-the-backdrop generator */}
+        <div className="mt-16 grid gap-8 border-t-2 border-dashed border-ink/40 pt-12 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-12">
+          <div ref={headshotRef} className="toy-box relative w-full max-w-xs justify-self-center bg-paper p-3 md:justify-self-start">
+            {loading || showGif ? (
+              <img src="/untitled folder 2/pandaForwardRoll.gif" alt="Loading..." className="aspect-square w-full border-2 border-ink object-cover" />
+            ) : (
+              <Image
+                src={headshotUrl}
+                alt="Sriram Natarajan"
+                width={600}
+                height={600}
+                className="w-full border-2 border-ink"
+              />
+            )}
+            <div className="mt-3 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-ink-soft">
+              <span>Fig. 1</span>
+              <span>{showPrompt ? "Custom paint" : "Factory paint"}</span>
             </div>
+          </div>
+
+          <div className="min-w-0">
+            {loading ? (
+              <div>
+                <h3 className="font-display text-3xl uppercase text-ink">Working on it…</h3>
+                <p className="mt-2 text-ink-soft">Feel free to keep scrolling — I&apos;ll let you know when it&apos;s ready.</p>
+              </div>
+            ) : imagesLeft === 0 ? (
+              <div>
+                <h3 className="font-display text-3xl uppercase text-ink">Sold out for today</h3>
+                <p className="mt-2 text-ink-soft">Out of free generations — come back tomorrow.</p>
+              </div>
+            ) : showPrompt ? (
+              <div>
+                <h3 className="font-display text-3xl uppercase text-ink">You said:</h3>
+                <p className="mt-2 text-lg italic text-ink-soft">&ldquo;{restatedPrompt}&rdquo;</p>
+              </div>
+            ) : (
+              <form
+                onSubmit={step === 'prompt' ? handlePromptSubmit : step === 'email' ? handleEmailSubmit : handleOtpSubmit}
+                className="toy-shadow border-[3px] border-ink bg-paper-2 p-6"
+              >
+                <div className="stamp mb-4 -rotate-1">Custom paint job</div>
+                {step === 'prompt' ? (
+                  <>
+                    <h3 className="font-display text-3xl uppercase leading-none text-ink">Not a fan of the orange backdrop?</h3>
+                    <p className="mb-4 mt-3 text-sm text-ink-soft">
+                      Type a scene and an AI model will re-shoot my headshot there. Genuinely — try it.
+                    </p>
+                    <Textarea
+                      value={prompt}
+                      onChange={e => setPrompt(e.target.value)}
+                      placeholder="e.g. put Sriram in a futuristic city on Mars"
+                      className="rounded-none border-2 border-ink bg-paper text-ink placeholder:text-ink-soft/60 focus-visible:border-accent focus-visible:ring-0"
+                      rows={3}
+                    />
+                    <button type="submit" className={`${BTN} mt-4 w-full justify-center`}>
+                      Generate a new background
+                    </button>
+                  </>
+                ) : step === 'email' ? (
+                  <>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="Your email (no code sent if you've verified before)"
+                      className="rounded-none border-2 border-ink bg-paper text-ink placeholder:text-ink-soft/60 focus-visible:border-accent focus-visible:ring-0"
+                    />
+                    {otpError && <div className="mt-2 text-sm text-accent">{otpError}</div>}
+                    <button type="submit" disabled={sendingOtp} className={`${BTN} mt-4 w-full justify-center`}>
+                      {sendingOtp ? "Sending code…" : "Send me a code"}
+                    </button>
+                  </>
                 ) : (
-                  <form onSubmit={step === 'prompt' ? handlePromptSubmit : step === 'email' ? handleEmailSubmit : handleOtpSubmit} className="w-full max-w-md mx-auto border border-line bg-paper-2/60 p-6 text-left">
-                    {step === 'prompt' ? (
-                      <>
-                        <div className="mb-3 font-display text-xl font-semibold text-ink">
-                          Not a fan of the orange backdrop?
-                        </div>
-                        <p className="mb-4 text-sm text-ink-soft">
-                          Type a scene and an AI model will re-shoot my headshot there. Genuinely — try it.
-                        </p>
-                        <Textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="e.g. put Sriram in a futuristic city on Mars" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60" rows={3} />
-                        <Button
-                          type="submit"
-                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
-                        >
-                          Generate a new background
-                        </Button>
-                      </>
-                    ) : step === 'email' ? (
-                      <>
-                        <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Your email (no code sent if you've verified before)" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60" />
-                        {otpError && <div className="mt-2 text-accent text-sm">{otpError}</div>}
-                        <Button
-                          type="submit"
-                          disabled={sendingOtp}
-                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
-                        >
-                          {sendingOtp ? "Sending code…" : "Send me a code"}
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="mb-3 text-ink-soft text-sm">
-                          Check <span className="font-semibold text-ink">{email}</span> for a 6-digit code.
-                        </div>
-                        <Input type="text" inputMode="numeric" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit code" className="border-line focus:border-accent focus:ring-accent/20 bg-paper text-ink placeholder:text-ink-soft/60 tracking-widest text-center" />
-                        {otpError && <div className="mt-2 text-accent text-sm">{otpError}</div>}
-                        <Button
-                          type="submit"
-                          className="mt-4 w-full rounded-none bg-ink text-paper hover:bg-accent transition-colors font-semibold"
-                        >
-                          Verify &amp; generate
-                        </Button>
-                      </>
-                    )}
-                    <div className="mt-4 font-mono text-xs text-ink-soft text-center">
-                      {imagesLeft}/20 free generations left today — this costs me real money.
+                  <>
+                    <div className="mb-3 text-sm text-ink-soft">
+                      Check <span className="font-semibold text-ink">{email}</span> for a 6-digit code.
                     </div>
-                  </form>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={otp}
+                      onChange={e => setOtp(e.target.value)}
+                      placeholder="6-digit code"
+                      className="rounded-none border-2 border-ink bg-paper text-center tracking-widest text-ink placeholder:text-ink-soft/60 focus-visible:border-accent focus-visible:ring-0"
+                    />
+                    {otpError && <div className="mt-2 text-sm text-accent">{otpError}</div>}
+                    <button type="submit" className={`${BTN} mt-4 w-full justify-center`}>
+                      Verify &amp; generate
+                    </button>
+                  </>
                 )}
-              </div>
+                <div className="mt-4 text-center font-mono text-[11px] uppercase tracking-[0.15em] text-ink-soft">
+                  {imagesLeft}/20 free today — this costs me real money
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      </DioramaSection>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 02 · Education — the temple                                          */}
+      <DioramaSection id="education" index={2} title="Education" tagline="Temple" Object={TempleObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">
+          University of Illinois
+          <br />
+          <span className="text-accent">Urbana-Champaign</span>
+        </h3>
+        <div className="mt-3 font-mono text-xs uppercase tracking-[0.2em] text-ink-soft">
+          Expected graduation · {education.grad.replace('Expected Graduation: ', '')}
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          {[
+            { label: "Major", value: education.major },
+            { label: "Minor", value: education.minor },
+            { label: "GPA", value: education.gpa },
+          ].map((item) => (
+            <div key={item.label} className="border-[3px] border-ink bg-paper p-4">
+              <div className="mb-1.5 font-mono text-[11px] uppercase tracking-[0.2em] text-accent">{item.label}</div>
+              <div className="text-lg font-semibold leading-snug text-ink">{item.value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+          <div className="lg:h-full">
+            <EducationCarousel />
+          </div>
+          <div>
+            <h4 className="font-display text-2xl uppercase text-ink">Relevant coursework</h4>
+            <p className="mb-4 mt-1 text-sm text-ink-soft">Tap a course to see what I learned and the tools I used.</p>
+            <div className="space-y-3">
+              {courses.map((course) => (
+                <CourseCard key={course.code} course={course} />
+              ))}
             </div>
           </div>
         </div>
-      </section>
+      </DioramaSection>
 
-              {/* Education Section */}
-        <section
-          id="education"
-          className="py-24 px-4 sm:px-8 lg:px-10 bg-paper-2 border-y border-line relative"
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="mb-14">
-              <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">01 · Education</div>
-              <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl font-medium text-ink tracking-tight mb-3">
-                University of Illinois, <span className="italic">Urbana-Champaign</span>
-              </h3>
-              <div className="font-mono text-sm text-ink-soft">
-                Expected graduation · {education.grad.replace('Expected Graduation: ', '')}
-              </div>
-            </div>
+      {/* ------------------------------------------------------------------ */}
+      {/* 03 · Experience — the treasure chest                                 */}
+      <DioramaSection id="experience" index={3} title="Experience" tagline="Chest" Object={TreasureChestObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">Where I&apos;ve worked</h3>
 
-            {/* Carousel · Major/Minor/GPA · Relevant Coursework — all equal height */}
-            <div className="grid lg:grid-cols-[1.25fr_0.65fr_1.2fr] gap-6 lg:gap-8 items-stretch">
-              {/* Carousel */}
-              <div className="h-full">
-                <EducationCarousel />
+        <div className="mt-8 border-t-[3px] border-ink">
+          {experience.map((exp, index) => (
+            <div key={index} className="grid gap-3 border-b-2 border-dashed border-ink/40 py-7 sm:grid-cols-[10rem_1fr] sm:gap-8">
+              <div className="pt-1">
+                {/* "February 2026 - May 2026" → "Feb 2026 – May 2026": fits the stamp */}
+                <div className="stamp leading-[1.5]">{exp.period.replace(/([A-Za-z]{3})[a-z]+ /g, "$1 ").replace(" - ", " – ")}</div>
+                <div className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-soft">{exp.location}</div>
               </div>
 
-              {/* Major / Minor / GPA */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-col gap-4 h-full">
-                {[
-                  { label: "Major", value: education.major },
-                  { label: "Minor", value: education.minor },
-                  { label: "GPA", value: education.gpa },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="border border-line bg-paper p-5 flex flex-col justify-center lg:flex-1"
-                  >
-                    <div className="font-mono text-accent text-xs uppercase tracking-wider mb-2">
-                      {item.label}
-                    </div>
-                    <div className="font-display text-xl font-semibold text-ink leading-snug">{item.value}</div>
+              <div className="min-w-0">
+                <div className="flex items-start gap-4">
+                  <Image
+                    src={exp.logo}
+                    alt={`${exp.company} logo`}
+                    width={64}
+                    height={64}
+                    className="h-12 w-12 shrink-0 border-2 border-ink bg-white object-contain object-center p-1"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-lg font-semibold leading-tight text-ink sm:text-xl">
+                      {exp.title.includes('<br') ? (
+                        <span dangerouslySetInnerHTML={{ __html: exp.title.replace(/<br\s*\/?>/g, ' ') }} />
+                      ) : (
+                        exp.title
+                      )}
+                    </h4>
+                    <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.15em] text-accent">{exp.company}</p>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              {/* Relevant Coursework — expandable cards */}
-              <div>
-                <h4 className="font-display text-2xl sm:text-3xl font-medium text-ink mb-2">Relevant Coursework</h4>
-                <p className="text-ink-soft mb-5 text-sm">Tap a course to see what I learned and the tools I used.</p>
-                <div className="space-y-3">
-                  {courses.map((course) => (
-                    <CourseCard key={course.code} course={course} />
+                <div className="mt-3">
+                  {exp.description.map((desc, i) => (
+                    <p key={i} className="mb-2 leading-relaxed text-ink-soft">{desc.replace(/^\s*-\s*/, "")}</p>
+                  ))}
+                </div>
+
+                {"demo" in exp && exp.demo ? (
+                  <Link
+                    href={exp.demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-3 inline-flex items-center gap-1.5 border-b-2 border-ink text-sm font-medium text-ink transition-colors hover:border-accent hover:text-accent"
+                  >
+                    <ExternalLink className="h-4 w-4 shrink-0" />
+                    {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot Project"}
+                  </Link>
+                ) : null}
+
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {exp.technologies.map((tech) => (
+                    <Chip key={tech}>{tech}</Chip>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </DioramaSection>
 
-      {/* About Section */}
-      {/* Removed entire section */}
+      {/* ------------------------------------------------------------------ */}
+      {/* 04 · Projects — the launch pad                                       */}
+      <DioramaSection id="projects" index={4} title="Projects" tagline="Launch pad" Object={LaunchPadObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">Things I&apos;ve built</h3>
 
-      {/* Experience */}
-      <section
-        id="experience"
-        className="py-24 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">02 · Experience</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Where I&apos;ve worked</h2>
-          </div>
-
-          <div className="divide-y divide-line border-y border-line">
-            {experience.map((exp, index) => (
-              <div key={index} className="grid gap-4 py-8 sm:grid-cols-[9rem_1fr] sm:gap-8">
-                {/* Left rail: dates */}
-                <div className="font-mono text-xs uppercase tracking-wide text-ink-soft pt-1">
-                  {exp.period}
-                  <div className="mt-1 normal-case tracking-normal text-ink-soft/70">{exp.location}</div>
+        {/* Featured */}
+        <div className="mt-8 space-y-10">
+          {featuredProjects.map((project) => (
+            <article key={project.title} className="toy-box bg-paper">
+              <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div className="relative aspect-[2/1] border-b-[3px] border-ink md:aspect-auto md:border-b-0 md:border-r-[3px]">
+                  <Image
+                    src={project.image || "/placeholder.svg"}
+                    alt={project.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                    className="object-cover"
+                  />
                 </div>
-
-                {/* Entry */}
-                <div>
-                  <div className="flex items-start gap-4">
-                    <Image
-                      src={exp.logo}
-                      alt={`${exp.company} logo`}
-                      width={64}
-                      height={64}
-                      className="w-11 h-11 bg-white object-contain object-center p-1 shrink-0 border border-line"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="font-display text-xl font-semibold text-ink leading-tight">
-                        {exp.title.includes('<br') ? (
-                          <span dangerouslySetInnerHTML={{ __html: exp.title.replace(/<br\s*\/?>/g, ' ') }} />
-                        ) : (
-                          exp.title
-                        )}
-                      </h3>
-                      <p className="text-accent font-medium">{exp.company}</p>
-                    </div>
+                <div className="p-6">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="stamp">{project.category}</span>
+                    <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-ink-soft">{project.period}</span>
                   </div>
-
-                  <div className="mt-3">
-                    {Array.isArray(exp.description) ? (
-                      (exp.description as string[]).map((desc, i) => (
-                        <p key={i} className="text-ink-soft mb-2 leading-relaxed">{desc.replace(/^\s*-\s*/, "")}</p>
-                      ))
-                    ) : typeof exp.description === 'string' ? (
-                      <p className="text-ink-soft mb-2 leading-relaxed">{(exp.description as string).replace(/^\s*-\s*/, "")}</p>
-                    ) : null}
-                  </div>
-
-                  {"demo" in exp && exp.demo ? (
-                    <Link
-                      href={exp.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-navy underline decoration-line underline-offset-4 hover:text-accent text-sm font-medium mb-3 transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                      {"demoLabel" in exp && exp.demoLabel ? exp.demoLabel : "Lerobot Project"}
-                    </Link>
-                  ) : null}
-
-                  <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-2">
-                    {exp.technologies.map((tech, techIndex) => (
-                      <span key={techIndex} className="font-mono text-xs text-ink-soft">
-                        {tech}{techIndex < exp.technologies.length - 1 ? " ·" : ""}
-                      </span>
+                  <h4 className="mt-4 font-display text-2xl uppercase leading-[1] text-ink sm:text-3xl">{project.title}</h4>
+                  <p className="mt-3 leading-relaxed text-ink-soft">{project.longDescription}</p>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {project.technologies.map((tech) => (
+                      <Chip key={tech}>{tech}</Chip>
                     ))}
                   </div>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link href={project.github} className={BTN}>
+                      <Github className="h-4 w-4" />
+                      Code
+                    </Link>
+                    <Link href={project.demo} className={BTN_GHOST}>
+                      <ExternalLink className="h-4 w-4" />
+                      Demo
+                    </Link>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </article>
+          ))}
         </div>
-      </section>
 
-      {/* Projects Section */}
-      <section
-        id="projects"
-        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-16">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">03 · Projects</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Things I&apos;ve built</h2>
-          </div>
-
-          {/* Featured Projects */}
-          <div className="space-y-20 mb-20">
-            {projects
-              .filter((p) => p.featured)
-              .map((project, index) => (
-                <div
-                  key={index}
-                  className={`grid lg:grid-cols-2 gap-12 items-center ${index % 2 === 1 ? "lg:grid-flow-col-dense" : ""}`}
-                >
-                  <div className={`space-y-6 ${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
-                    <div className="space-y-4">
-                      <Badge variant="outline" className="font-mono rounded-none bg-transparent text-accent border-accent/40">
-                        {project.category}
-                      </Badge>
-                      <h3 className="font-display text-3xl font-semibold text-ink tracking-tight">{project.title}</h3>
-                      <p className="text-lg text-ink-soft leading-relaxed">{project.longDescription}</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                      {project.technologies.map((tech, techIndex) => (
-                        <span key={techIndex} className="font-mono text-xs text-ink-soft">
-                          {tech}{techIndex < project.technologies.length - 1 ? " ·" : ""}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-6 pt-1">
-                      <Link
-                        href={project.github}
-                        className="inline-flex items-center gap-2 font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
-                      >
-                        <Github className="w-4 h-4" />
-                        View code
-                      </Link>
-                      <Link
-                        href={project.demo}
-                        className="inline-flex items-center gap-2 font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Live demo
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className={`relative ${index % 2 === 1 ? "lg:col-start-1" : ""}`}>
-                    <Image
-                      src={project.image || "/placeholder.svg"}
-                      alt={project.title}
-                      width={700}
-                      height={350}
-                      className="border border-line object-cover w-[700px] h-[350px]"
-                    />
-                  </div>
+        {/* The rest of the shelf */}
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+          {otherProjects.map((project) => (
+            <article key={project.title} className="toy-shadow flex flex-col border-[3px] border-ink bg-paper">
+              <div className="relative aspect-[3/2] border-b-[3px] border-ink">
+                <Image
+                  src={project.image || "/placeholder.svg"}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 33vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">{project.category}</div>
+                <h4 className="mt-2 font-display text-2xl uppercase leading-none text-ink">{project.title}</h4>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">{project.description[0]}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {project.technologies.slice(0, 4).map((tech) => (
+                    <Chip key={tech}>{tech}</Chip>
+                  ))}
                 </div>
-              ))}
-          </div>
-
-          {/* Other Projects Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects
-              .filter((p) => !p.featured)
-              .map((project, index) => (
-                <Card
-                  key={index}
-                  className="overflow-hidden rounded-none border border-line bg-paper shadow-none transition-colors hover:border-accent/50 group"
-                >
-                  <div className="relative overflow-hidden border-b border-line">
-                    <Image
-                      src={project.image || "/placeholder.svg"}
-                      alt={project.title}
-                      width={700}
-                      height={350}
-                      className="w-full h-[300px] object-cover"
-                    />
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <div className="font-mono text-[11px] uppercase tracking-wider text-accent mb-1">
-                      {project.category}
-                    </div>
-                    <CardTitle className="font-display text-xl font-semibold text-ink">
-                      {project.title}
-                    </CardTitle>
-                    <CardDescription className="text-sm leading-relaxed text-ink-soft">
-                      {project.description}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-x-3 gap-y-1">
-                      {project.technologies.slice(0, 4).map((tech, techIndex) => (
-                        <span key={techIndex} className="font-mono text-xs text-ink-soft">
-                          {tech}{techIndex < Math.min(project.technologies.length, 4) - 1 ? " ·" : ""}
-                        </span>
-                      ))}
-                    </div>
-
-                    {project.title === "Beyond Terra" ? (
-                      <Link
-                        href="https://drive.google.com/drive/u/1/folders/1qRmqG-BfqBlJLqzdnd1UOSWiOVFkGsKW"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
+                <div className="mt-auto flex gap-3 pt-5">
+                  {project.title === "Seed Drone" ? (
+                    <Link
+                      href={project.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={BTN_GHOST}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Demo
+                    </Link>
+                  ) : (
+                    <>
+                      <Link href={project.github} className={BTN_GHOST}>
+                        <Github className="h-4 w-4" />
+                        Code
+                      </Link>
+                      <Link href={project.demo} className={BTN_GHOST}>
+                        <ExternalLink className="h-4 w-4" />
                         Demo
                       </Link>
-                    ) : (
-                      <div className="flex gap-5 pt-1">
-                        <Link
-                          href={project.github}
-                          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
-                        >
-                          <Github className="w-3.5 h-3.5" />
-                          Code
-                        </Link>
-                        <Link
-                          href={project.demo}
-                          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:text-accent transition-colors"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          Demo
-                        </Link>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Skills Section */}
-      <section
-        id="skills"
-        className="py-24 px-4 sm:px-6 lg:px-8"
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">04 · Skills</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">Tools I reach for</h2>
-          </div>
-
-          <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-            {skillGroups.map((group) => (
-              <div key={group.label} className="bg-paper p-6">
-                <div className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">
-                  {group.label}
+                    </>
+                  )}
                 </div>
-                <ul className="space-y-2">
-                  {group.items.map((item) => (
-                    <li key={item} className="text-ink-soft leading-relaxed">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
               </div>
-            ))}
-          </div>
+            </article>
+          ))}
         </div>
-      </section>
+      </DioramaSection>
 
-      {/* Hobbies Section */}
-      <section
-        id="hobbies"
-        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">05 · Off the clock</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight">When I&apos;m not coding</h2>
-          </div>
+      {/* ------------------------------------------------------------------ */}
+      {/* 05 · Skills — the tool stump                                         */}
+      <DioramaSection id="skills" index={5} title="Skills" tagline="Tool stump" Object={ToolsObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">Tools I reach for</h3>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {hobbies.map((hobby, index) => (
-              <figure key={index} className="border border-line bg-paper p-3">
+        <div className="mt-8 space-y-8">
+          {skillGroups.map((group) => (
+            <div key={group.label}>
+              <div className="mb-3 inline-block bg-ink px-3 py-1 font-display text-lg uppercase tracking-wide text-paper">
+                {group.label}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {group.items.map((item) => (
+                  <span
+                    key={item}
+                    className="toy-shadow-sm border-2 border-ink bg-paper px-3.5 py-2 font-mono text-sm text-ink"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </DioramaSection>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 06 · Hobbies — the basketball hoop                                   */}
+      <DioramaSection id="hobbies" index={6} title="Hobbies" tagline="Hoop" Object={BasketballHoopObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">When I&apos;m not coding</h3>
+
+        <div className="mt-10 grid gap-10 sm:grid-cols-2 xl:grid-cols-3">
+          {hobbies.map((hobby) => (
+            <figure key={hobby.name} className={`toy-shadow relative border-[3px] border-ink bg-paper p-3 pb-4 ${hobby.tilt}`}>
+              {/* tape */}
+              <div className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 -rotate-3 bg-accent/80" aria-hidden />
+              <div className="relative aspect-[4/5] border-2 border-ink">
                 <Image
                   src={hobby.image || "/placeholder.svg"}
                   alt={hobby.name}
-                  width={700}
-                  height={350}
-                  className="w-full h-[320px] object-cover border border-line"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 33vw"
+                  className="object-cover"
                 />
-                <figcaption className="pt-3 pb-1 px-1 font-mono text-sm text-ink">
-                  {hobby.name}
-                  {hobby.description ? <span className="text-ink-soft"> — {hobby.description}</span> : null}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section
-        id="contact"
-        className="py-24 px-4 sm:px-6 lg:px-8 bg-paper-2 border-y border-line"
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-14">
-            <div className="font-mono text-xs uppercase tracking-[0.25em] text-accent mb-3">06 · Contact</div>
-            <h2 className="font-display text-4xl sm:text-5xl font-medium text-ink tracking-tight mb-3">Get in touch</h2>
-            <p className="text-lg text-ink-soft max-w-2xl">
-              Flip through the rolodex — email is the fastest way to reach me, and I actually reply.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Rolodex — flip through contact cards */}
-            <Rolodex />
-
-            <figure className="justify-self-center">
-              <Image
-                src="/untitled folder 2/nbastore.jpeg"
-                alt="Me at the NBA Store"
-                width={500}
-                height={642}
-                className="border border-line max-w-full h-auto"
-              />
+              </div>
+              <figcaption className="mt-3 font-display text-2xl uppercase leading-none text-ink">{hobby.name}</figcaption>
             </figure>
-          </div>
+          ))}
         </div>
-      </section>
+      </DioramaSection>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* 07 · Contact — the phone booth                                       */}
+      <DioramaSection id="contact" index={7} title="Contact" tagline="Phone booth" Object={PhoneBoothObject}>
+        <h3 className="font-display text-4xl uppercase leading-[0.95] text-ink sm:text-5xl">Get in touch</h3>
+        <p className="mt-3 max-w-2xl text-lg text-ink-soft">
+          Flip through the rolodex — email is the fastest way to reach me, and I actually reply.
+        </p>
+
+        <div className="mt-10 grid items-center gap-12 lg:grid-cols-2">
+          <Rolodex />
+
+          <figure className="toy-shadow relative w-full max-w-sm justify-self-center rotate-1 border-[3px] border-ink bg-paper p-3 pb-4">
+            <div className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-2 bg-accent/80" aria-hidden />
+            <Image
+              src="/untitled folder 2/nbastore.jpeg"
+              alt="Me at the NBA Store"
+              width={500}
+              height={642}
+              className="h-auto w-full border-2 border-ink"
+            />
+            <figcaption className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-soft">NBA Store, NYC</figcaption>
+          </figure>
+        </div>
+      </DioramaSection>
 
       {/* Footer */}
-      <footer className="bg-paper-2 border-t border-line py-14 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid gap-10 md:grid-cols-3 mb-10">
+      <footer className="border-t-[3px] border-ink bg-ink px-4 py-12 text-paper sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 grid gap-10 md:grid-cols-3">
             <div>
-              <div className="font-display text-2xl font-semibold text-ink mb-3">
-                Sriram Natarajan
-              </div>
-              <div className="flex gap-4">
+              <div className="font-display text-3xl uppercase leading-none tracking-wide">Sriram Natarajan</div>
+              <div className="mt-4 flex gap-3">
                 {[
                   { icon: Github, href: "https://github.com/Sriramnat100", label: "GitHub" },
                   { icon: Linkedin, href: "https://www.linkedin.com/in/sriramnat/", label: "LinkedIn" },
-                ].map((social, index) => (
+                ].map((social) => (
                   <Link
-                    key={index}
+                    key={social.label}
                     href={social.href}
-                    className="text-ink-soft hover:text-accent transition-colors"
+                    className="flex h-9 w-9 items-center justify-center border-2 border-paper text-paper transition-colors hover:bg-paper hover:text-ink"
                     aria-label={social.label}
                   >
-                    <social.icon className="w-5 h-5" />
+                    <social.icon className="h-4 w-4" />
                   </Link>
                 ))}
               </div>
             </div>
 
             <div>
-              <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Index</h4>
-              <ul className="space-y-2">
-                {["About", "Projects", "Skills", "Contact"].map((link) => (
-                  <li key={link}>
-                    <a href={`#${link.toLowerCase()}`} className="text-ink-soft hover:text-accent transition-colors">
-                      {link}
+              <h4 className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">Index</h4>
+              <ul className="space-y-1.5">
+                {NAV.map((item) => (
+                  <li key={item.id}>
+                    <a href={`#${item.id}`} className="font-mono text-xs uppercase tracking-[0.15em] text-paper transition-colors hover:text-accent">
+                      {item.label}
                     </a>
                   </li>
                 ))}
@@ -1282,16 +1092,16 @@ export default function Portfolio() {
             </div>
 
             <div>
-              <h4 className="font-mono text-xs uppercase tracking-[0.2em] text-accent mb-4">Colophon</h4>
-              <p className="text-ink-soft text-sm leading-relaxed max-w-xs">
-                Designed and built by me with Next.js, set in Fraunces and IBM Plex.
-                The island and rolodex are hand-rolled — go play with them.
+              <h4 className="mb-4 font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">Colophon</h4>
+              <p className="max-w-xs text-sm leading-relaxed text-paper/80">
+                Designed and built by me with Next.js and three.js, set in Anton and IBM Plex.
+                Every figure on this page is hand-modelled — go spin them.
               </p>
             </div>
           </div>
 
-          <div className="border-t border-line pt-6">
-            <p className="font-mono text-xs text-ink-soft">
+          <div className="border-t-2 border-paper/20 pt-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.15em] text-paper/60">
               © 2026 Sriram Natarajan · Champaign–Fremont
             </p>
           </div>

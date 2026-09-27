@@ -35,7 +35,7 @@ export default function EducationCarousel() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="relative w-full aspect-[4/5] lg:aspect-auto lg:h-full overflow-hidden border border-line bg-paper shadow-sm">
+      <div className="toy-box relative aspect-[4/5] w-full overflow-hidden bg-paper lg:aspect-auto lg:h-full">
         {IMAGES.map((img, i) => (
           <Image
             key={img.src}
@@ -48,41 +48,30 @@ export default function EducationCarousel() {
           />
         ))}
 
-        {/* Caption */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-12">
-          <div className="text-sm font-semibold text-white drop-shadow sm:text-base">
-            {IMAGES[index].caption}
-          </div>
+        {/* Caption plate */}
+        <div className="absolute bottom-3 left-3 border-2 border-ink bg-paper px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-ink">
+          {IMAGES[index].caption}
         </div>
 
         {/* Prev / Next */}
         <button
           onClick={() => go(-1)}
           aria-label="Previous photo"
-          className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-all hover:bg-black/70 group-hover:opacity-100"
+          className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-ink bg-paper text-ink opacity-0 transition-all hover:bg-ink hover:text-paper group-hover:opacity-100"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
         <button
           onClick={() => go(1)}
           aria-label="Next photo"
-          className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur transition-all hover:bg-black/70 group-hover:opacity-100"
+          className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-ink bg-paper text-ink opacity-0 transition-all hover:bg-ink hover:text-paper group-hover:opacity-100"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
 
-        {/* Dots */}
-        <div className="absolute bottom-3 right-3 flex gap-1.5">
-          {IMAGES.map((img, i) => (
-            <button
-              key={img.src}
-              onClick={() => setIndex(i)}
-              aria-label={`Go to photo ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === index ? "w-5 bg-white" : "w-2 bg-white/50 hover:bg-white/80"
-              }`}
-            />
-          ))}
+        {/* Counter */}
+        <div className="absolute right-3 top-3 border-2 border-ink bg-ink px-2 py-1 font-mono text-[11px] text-paper">
+          {String(index + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
         </div>
       </div>
     </div>

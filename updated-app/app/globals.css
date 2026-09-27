@@ -8,8 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
-  --font-display: var(--font-fraunces);
-  --font-hero: var(--font-bricolage);
+  --font-display: var(--font-anton);
 
   /* Paper-and-ink palette (accent maps through shadcn's --accent below) */
   --color-paper: #f6f1e7;
@@ -120,6 +119,53 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* ---------------------------------------------------------------------------
+   Toy-packaging vocabulary. Hard ink borders, offset shadows with no blur,
+   stamped labels. These are the only decorative devices on the page, so
+   everything reads as one system. */
+
+/* A display box: thick ink border with a solid offset shadow. */
+@utility toy-box {
+  border: 3px solid var(--color-ink);
+  box-shadow: 8px 8px 0 0 var(--color-ink);
+}
+@utility toy-shadow {
+  box-shadow: 6px 6px 0 0 var(--color-ink);
+}
+@utility toy-shadow-sm {
+  box-shadow: 3px 3px 0 0 var(--color-ink);
+}
+@utility toy-shadow-accent {
+  box-shadow: 6px 6px 0 0 var(--color-accent);
+}
+
+/* A small stamped label, e.g. "HI, I'M" or "No. 03". */
+@utility stamp {
+  display: inline-block;
+  font-family: var(--font-plex-mono);
+  font-size: 11px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  padding: 6px 9px 5px;
+  border: 2px solid var(--color-ink);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Block-extruded lettering for the hero name — stacked hard shadows in the
+   accent colour, capped with ink, so the letters stand off the page like a
+   painted sign. Units are em so the depth scales with the type size. */
+.title-extrude {
+  -webkit-text-stroke: 0.012em var(--color-ink);
+  text-shadow:
+    0.02em 0.02em 0 var(--color-accent),
+    0.04em 0.04em 0 var(--color-accent),
+    0.06em 0.06em 0 var(--color-accent),
+    0.08em 0.08em 0 var(--color-accent),
+    0.1em 0.1em 0 var(--color-ink);
 }
 
 /* Hero intro animations. These live here, in a real render-blocking

@@ -7,6 +7,12 @@
       "runtimeArgs": ["run", "dev:plain", "--prefix", "updated-app"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "taxonomy",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "/private/tmp/claude-501/-Users-sriramnatarajan-Documents-portfolio/04094830-b3d0-49f4-b076-f368f3e68409/scratchpad/taxonomy"],
+      "port": 8765
     }
   ]
 }

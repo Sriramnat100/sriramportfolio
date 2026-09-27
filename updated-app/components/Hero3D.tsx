@@ -5,6 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ChevronDown } from "lucide-react";
 import DioramaScene from "./hero3d/DioramaScene";
+import HeroTitle from "./HeroTitle";
 
 export default function Hero3D() {
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -81,7 +82,7 @@ export default function Hero3D() {
         </Canvas>
       </div>
 
-      <div className="pointer-events-none relative z-10 flex h-full flex-col items-center px-6 pt-12 text-center sm:pt-16">
+      <div className="pointer-events-none relative z-10 flex h-full flex-col items-center px-6 pt-10 text-center sm:pt-12">
         {/* No entrance animation here on purpose — the dynamic-import
             loading fallback in page.tsx renders this exact same heading
             and plays the fade-in on it first (since Hero3D's JS chunk
@@ -91,11 +92,9 @@ export default function Hero3D() {
             version mounted, then fade in a second time. Rendering
             straight into the settled end-state here makes the swap
             invisible. */}
-        <h1 className="font-mono text-3xl font-medium tracking-tight text-ink sm:text-6xl">
-          Hi, I&apos;m Sriram Natarajan
-        </h1>
-        <p className="animate-intro-cue mt-4 font-mono text-xs uppercase tracking-[0.3em] text-ink-soft sm:text-sm">
-          Click something below — or drag the island to look around.
+        <HeroTitle />
+        <p className="animate-intro-cue mt-5 font-mono text-xs uppercase tracking-[0.3em] text-ink-soft sm:text-sm">
+          Tap an island — or drag to look around.
         </p>
       </div>
 

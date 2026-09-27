@@ -87,18 +87,18 @@ export default function Rolodex() {
     <div
       ref={rootRef}
       tabIndex={0}
-      className="group/rolodex mx-auto w-full max-w-md outline-none"
+      className="group/rolodex mx-auto w-full max-w-md outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-paper"
       aria-label="Contact rolodex — use arrow keys or the buttons to flip"
     >
       <div className="relative" style={{ perspective: "1200px" }}>
-        {/* Card behind (peek of the next card) */}
-        <div className="absolute inset-x-4 top-3 h-full rounded-xl border border-amber-200/20 bg-[#e9e2d0]/20 blur-[0.5px]" aria-hidden />
-        <div className="absolute inset-x-2 top-1.5 h-full rounded-xl border border-amber-200/30 bg-[#efe8d8]/30" aria-hidden />
+        {/* Cards behind (peek of the stack) */}
+        <div className="absolute inset-x-4 top-3 h-full border-2 border-ink/25 bg-paper-2" aria-hidden />
+        <div className="absolute inset-x-2 top-1.5 h-full border-2 border-ink/45 bg-paper-2" aria-hidden />
 
         {/* The index card */}
         <div
           onTransitionEnd={onCardTransitionEnd}
-          className={`relative origin-bottom rounded-xl shadow-2xl ${
+          className={`relative origin-bottom ${
             phase === "in" ? "" : "transition-transform duration-300 ease-in"
           }`}
           style={{
@@ -107,30 +107,30 @@ export default function Rolodex() {
             backfaceVisibility: "hidden",
           }}
         >
-          <div className="relative overflow-hidden rounded-xl border border-amber-900/20 bg-[#f6f1e3] px-8 pb-10 pt-7 text-slate-800">
+          <div className="toy-box relative overflow-hidden bg-paper px-8 pb-10 pt-7 text-ink">
             {/* Ruled lines like a real index card */}
             <div
-              className="pointer-events-none absolute inset-0 opacity-60"
+              className="pointer-events-none absolute inset-0 opacity-70"
               style={{
                 background:
-                  "repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, rgba(96,125,180,0.25) 28px)",
+                  "repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, rgba(31,58,95,0.28) 28px)",
                 backgroundPosition: "0 64px",
               }}
             />
-            <div className="pointer-events-none absolute inset-x-0 top-[52px] h-px bg-red-400/50" />
+            <div className="pointer-events-none absolute inset-x-0 top-[52px] h-[2px] bg-accent/70" />
 
             <div className="relative">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-slate-500">
-                  <Icon className="h-4 w-4 text-slate-600" />
+                <div className="flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.25em] text-ink-soft">
+                  <Icon className="h-4 w-4 text-ink" />
                   {card.label}
                 </div>
-                <div className="font-mono text-xs text-slate-400">
+                <div className="font-mono text-xs text-ink-soft">
                   {index + 1} / {CARDS.length}
                 </div>
               </div>
 
-              <div className="mt-6 break-all font-mono text-lg font-semibold text-slate-800 sm:text-xl">
+              <div className="mt-6 break-all font-mono text-lg font-semibold text-ink sm:text-xl">
                 {card.value}
               </div>
 
@@ -138,43 +138,43 @@ export default function Rolodex() {
                 href={card.href}
                 target={card.href.startsWith("mailto:") ? undefined : "_blank"}
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-800 px-5 py-2 text-sm font-semibold text-amber-50 shadow transition-transform hover:scale-105"
+                className="toy-shadow-sm mt-6 inline-flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 font-mono text-xs font-medium uppercase tracking-[0.15em] text-paper transition-colors hover:bg-accent"
               >
                 {card.action} →
               </a>
             </div>
 
             {/* Spindle notches cut into the bottom edge */}
-            <div className="absolute -bottom-1 left-[22%] h-5 w-8 -translate-x-1/2 rounded-t-full bg-slate-900" />
-            <div className="absolute -bottom-1 left-[78%] h-5 w-8 -translate-x-1/2 rounded-t-full bg-slate-900" />
+            <div className="absolute -bottom-1 left-[22%] h-5 w-8 -translate-x-1/2 rounded-t-full bg-ink" />
+            <div className="absolute -bottom-1 left-[78%] h-5 w-8 -translate-x-1/2 rounded-t-full bg-ink" />
           </div>
         </div>
 
         {/* Axle + knobs */}
         <div className="relative mt-[-6px] flex items-center" aria-hidden>
-          <div className="z-10 h-8 w-8 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 shadow-lg ring-2 ring-slate-800" />
-          <div className="z-0 -mx-1 h-3 flex-1 rounded-full bg-gradient-to-b from-slate-600 to-slate-800 shadow-inner" />
-          <div className="z-10 h-8 w-8 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 shadow-lg ring-2 ring-slate-800" />
+          <div className="z-10 h-8 w-8 rounded-full border-[3px] border-ink bg-paper-2" />
+          <div className="z-0 -mx-1 h-3 flex-1 bg-ink" />
+          <div className="z-10 h-8 w-8 rounded-full border-[3px] border-ink bg-paper-2" />
         </div>
         {/* Base */}
-        <div className="mx-6 h-4 rounded-b-2xl bg-gradient-to-b from-slate-800 to-slate-900 shadow-xl" aria-hidden />
+        <div className="mx-6 h-4 bg-ink" aria-hidden />
       </div>
 
       {/* Flip controls */}
       <div className="mt-6 flex items-center justify-center gap-3">
         <button
           onClick={() => flip(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent"
+          className="flex h-10 w-10 items-center justify-center border-2 border-ink bg-paper text-ink transition-colors hover:bg-ink hover:text-paper"
           aria-label="Previous card"
         >
           <ChevronUp className="h-5 w-5" />
         </button>
-        <div className="font-mono text-xs uppercase tracking-[0.25em] text-ink-soft">
-          flip · next up: <span className="text-ink">{peek.label}</span>
+        <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-soft">
+          flip · next: <span className="text-ink">{peek.label}</span>
         </div>
         <button
           onClick={() => flip(1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-accent hover:text-accent"
+          className="flex h-10 w-10 items-center justify-center border-2 border-ink bg-paper text-ink transition-colors hover:bg-ink hover:text-paper"
           aria-label="Next card"
         >
           <ChevronDown className="h-5 w-5" />
