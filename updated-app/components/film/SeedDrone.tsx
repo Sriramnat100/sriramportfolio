@@ -45,7 +45,7 @@ export default function SeedDrone() {
         <div className="relative aspect-[1448/1086]">
           <Image
             src="/film/seed-drone.webp"
-            alt="A white quadcopter in flight against black, carrying a custom seed-dispersal payload — wired electronics on a black mounting plate above a cylindrical drop tube."
+            alt="A white quadcopter in flight against black, carrying a custom seed-dispersal payload: wired electronics on a black mounting plate above a cylindrical drop tube."
             fill
             sizes="(max-width: 640px) 108vw, 72vw"
             className="object-contain"
@@ -57,7 +57,7 @@ export default function SeedDrone() {
 
       <div className="frame relative z-10 mt-[4svh] flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
         <p className="t-body reveal max-w-[34rem]">
-          A seed‑dispersal payload I CAD‑modeled, 3D‑printed, and field‑tested — real‑time <strong>C++ on Arduino</strong>{" "}
+          A seed‑dispersal payload I CAD‑modeled, 3D‑printed, and field‑tested, with real‑time <strong>C++ on Arduino</strong>{" "}
           driving the servos, and <strong>GPS tracking on AWS</strong> to follow what grows.
         </p>
         <div className="reveal md:text-right" style={{ ["--d" as string]: "140ms" }}>

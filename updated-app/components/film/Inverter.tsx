@@ -81,10 +81,10 @@ export default function Inverter() {
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between overflow-hidden pb-[7svh] pt-[15svh]">
         <div className="frame">
-          <Brand logo="/film/logos/rivian-mark.png" name={RIVIAN.company} meta={RIVIAN.when} />
+          <Brand logo="/film/logos/rivian-mark.png" name={RIVIAN.company} meta={[RIVIAN.role, RIVIAN.when]} />
           <h2 id="rivian-title" className="t-headline reveal mt-4" style={{ ["--d" as string]: "120ms" }}>
             <span className="sr-only">Rivian: </span>
-            DC in.
+            Direct Current in.
             <br className="sm:hidden" /> Motion out.
           </h2>
         </div>
@@ -161,7 +161,7 @@ export default function Inverter() {
             </div>
           )}
           <p className="t-small max-w-[22rem] md:text-right">
-            {RIVIAN.role} on the inverter team — the power electronics between the battery and the motors. C, C++, and Python.
+            On the inverter team: the power electronics between the battery and the motors. C, C++, and Python.
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ const inter = localFont({
 export const metadata: Metadata = {
   title: "Sriram Natarajan",
   description:
-    "Sriram Natarajan — software engineer studying Computer Science + Linguistics at the University of Illinois. Embedded software at Rivian, forward-deployed engineering at C3 AI, and machine learning that leaves the screen.",
+    "Sriram Natarajan, software engineer studying Computer Science + Linguistics at the University of Illinois. Embedded software at Rivian, forward-deployed engineering at C3 AI, and machine learning that leaves the screen.",
 };
 
 export const viewport: Viewport = {

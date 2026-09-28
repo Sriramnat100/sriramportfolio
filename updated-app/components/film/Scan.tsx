@@ -51,7 +51,7 @@ export default function Scan() {
 
         <div className="max-w-[36rem]">
           <p className="t-body">
-            A convolutional network that classifies MRI scans for early signs of Alzheimer’s disease — built in{" "}
+            A convolutional network that classifies MRI scans for early signs of Alzheimer’s disease, built in{" "}
             <strong>TensorFlow and Keras.</strong>
           </p>
           <a

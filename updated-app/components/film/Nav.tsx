@@ -53,7 +53,7 @@ export default function Nav() {
         <ul className="flex items-center gap-5 text-[12px] sm:gap-8 sm:text-[13px]">
           {NAV.map((item) => (
             <li key={item.href} className={
-                item.label === "Illinois" ? "hidden sm:block" : item.label === "Projects" ? "max-[380px]:hidden" : ""
+                item.label === "School" ? "hidden sm:block" : item.label === "Projects" ? "max-[380px]:hidden" : ""
               }>
               <a href={item.href} className="opacity-80 transition-opacity duration-300 hover:opacity-100">
                 {item.label}

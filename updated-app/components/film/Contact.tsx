@@ -1,4 +1,5 @@
 import { PERSON } from "@/lib/content";
+import Lattice from "./Lattice";
 
 // Scene 10. The last word, and the only call to action that matters.
 export default function Contact() {
@@ -12,20 +13,25 @@ export default function Contact() {
       id="contact"
       aria-labelledby="contact-title"
       data-nav-theme="light"
-      className="theme-light frame pb-[16svh] pt-[22svh]"
+      className="theme-light frame relative overflow-hidden pb-[12svh] pt-[7svh] lg:pb-[16svh] lg:pt-[22svh]"
     >
-      <p className="t-eyebrow reveal">Contact</p>
-      <h2
-        id="contact-title"
-        className="reveal mt-3 text-[clamp(56px,10.5vw,176px)] font-bold leading-[0.92] tracking-[-0.05em]"
-        style={{ ["--d" as string]: "100ms" }}
-      >
-        Let’s build
-        <br />
-        something.
-      </h2>
+      {/* The heading's size is a variable so the figure beside it can be
+          placed against its second line. */}
+      <div className="contact-head">
+        <Lattice className="contact-art pointer-events-none" />
+        <p className="t-eyebrow reveal relative">Contact</p>
+        <h2
+          id="contact-title"
+          className="reveal relative mt-3 text-[length:var(--hf)] font-bold leading-[0.92] tracking-[-0.05em]"
+          style={{ ["--d" as string]: "100ms" }}
+        >
+          Let’s build
+          <br />
+          something cool.
+        </h2>
+      </div>
 
-      <div className="reveal mt-[9svh]" style={{ ["--d" as string]: "200ms" }}>
+      <div className="reveal relative mt-[9svh]" style={{ ["--d" as string]: "200ms" }}>
         <a
           href={`mailto:${PERSON.email}`}
           className="link text-[clamp(26px,3.4vw,52px)] font-semibold tracking-[-0.025em]"
@@ -56,7 +62,6 @@ export function Footer() {
     <footer className="theme-light">
       <div className="frame flex flex-col gap-2 border-t border-hair-light py-7 sm:flex-row sm:justify-between">
         <p className="t-small">© 2026 {PERSON.name}</p>
-        <p className="t-small">Designed and built in Urbana‑Champaign.</p>
       </div>
     </footer>
   );

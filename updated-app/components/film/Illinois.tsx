@@ -37,7 +37,7 @@ export default function Illinois() {
               </h2>
             </div>
             <p className="t-body reveal max-w-[30rem] md:pb-2" style={{ ["--d" as string]: "200ms" }}>
-              <strong>Computer Science + Linguistics,</strong> with a minor in Data Science — how machines compute, and
+              <strong>Computer Science + Linguistics,</strong> with a minor in Data Science: how machines compute, and
               how people talk. <strong>3.85 GPA. Class of 2028.</strong>
             </p>
           </div>

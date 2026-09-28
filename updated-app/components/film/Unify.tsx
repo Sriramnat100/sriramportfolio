@@ -126,13 +126,13 @@ export default function Unify() {
           <Brand
             logo="/film/logos/c3-mark.png"
             name={C3.company}
-            meta={`${C3.client} · ${C3.when}`}
+            meta={[C3.role, C3.when]}
             invert={!WORK_ON_WHITE}
           />
           <h2 id="c3-title" className="t-headline reveal mt-4" style={{ ["--d" as string]: "120ms" }}>
             <span className="sr-only">C3 AI: </span>
-            Supply in.
-            <br className="sm:hidden" /> Readiness out.
+            Fuel routed.
+            <br className="sm:hidden" /> Missions ready.
           </h2>
         </div>
 
@@ -158,7 +158,7 @@ export default function Unify() {
             </div>
           )}
           <p className="t-small max-w-[22rem] md:text-right">
-            {C3.role} on the Federal team in Redwood City, working with the {C3.client}. Python, SQL, and the C3&nbsp;AI
+            On the Federal team in Redwood City, working with the {C3.client}. Python, SQL, and the C3&nbsp;AI
             Platform.
           </p>
         </div>

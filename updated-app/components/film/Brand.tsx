@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-// The eyebrow for a work scene: the company's mark, its name, and when.
-// Larger than a plain eyebrow so the company reads first.
+// The eyebrow for a work scene: the company's mark, its name, the role, and
+// when. Larger than a plain eyebrow so the company reads first.
 export default function Brand({
   logo,
   name,
@@ -10,7 +10,7 @@ export default function Brand({
 }: {
   logo: string;
   name: string;
-  meta: string;
+  meta: string[];
   invert?: boolean;
 }) {
   return (
@@ -23,10 +23,15 @@ export default function Brand({
         className={`size-[1.35em] shrink-0 object-contain ${invert ? "invert" : ""}`}
       />
       <span>{name}</span>
-      {/* On phones the details drop to their own line, without a leading dot. */}
-      <span className="basis-full text-[0.82em] font-medium text-mute sm:basis-auto sm:text-[1em]">
-        <span className="hidden sm:inline">· </span>
-        {meta}
+      {/* On phones and small tablets the details drop below the name, one
+          per line, without the dots. */}
+      <span className="basis-full text-[0.82em] font-medium text-mute md:basis-auto md:text-[1em]">
+        {meta.map((m) => (
+          <span key={m} className="block md:inline">
+            <span className="hidden md:inline">· </span>
+            {m}{" "}
+          </span>
+        ))}
       </span>
     </p>
   );

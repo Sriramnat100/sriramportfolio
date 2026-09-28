@@ -282,6 +282,33 @@ body {
     text-decoration-color: currentColor;
   }
 
+  /* Contact: the lattice. On phones and tablets it stands above the heading
+     at the right. From lg it stands beside the heading, placed so its waist
+     falls just past the end of the second line, and it is never taller than
+     the room left to the right of that line allows. */
+  .contact-head {
+    --hf: clamp(56px, 10.5vw, 176px);
+    position: relative;
+  }
+  .contact-art {
+    aspect-ratio: 540 / 900;
+    height: 24svh;
+    margin: 0 0 4svh auto;
+  }
+  @media (min-width: 64rem) {
+    .contact-head {
+      width: fit-content;
+    }
+    .contact-art {
+      --lh: min(66svh, calc((100vw - 2 * var(--gutter) - 6.6 * var(--hf) - 40px) / 0.45));
+      position: absolute;
+      height: var(--lh);
+      margin: 0;
+      left: calc(100% + 40px - 0.15 * var(--lh));
+      top: calc(100% - 0.46 * var(--hf) - 0.5 * var(--lh));
+    }
+  }
+
   /* Light scenes: off-white near the end of the page; pure white for the
      trial of the work chapter (see WORK_ON_WHITE in lib/content.ts). */
   .theme-light,

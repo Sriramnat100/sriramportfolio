@@ -11,7 +11,7 @@ export const PERSON = {
 export const NAV = [
   { label: "Work", href: "#work" },
   { label: "Projects", href: "#projects" },
-  { label: "Illinois", href: "#illinois" },
+  { label: "School", href: "#illinois" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -46,9 +46,9 @@ export const C3 = {
   role: "Forward Deployed Software Engineer Intern",
   sources: ["Suppliers", "Contracts", "Depots", "Orders", "Maintenance"],
   steps: [
-    "The Defense Logistics Agency supplies the U.S. military — about 5 million items, tracked in systems that don’t talk.",
+    "The Defense Logistics Agency supplies the U.S. military: about 5 million items, tracked in systems that don’t talk.",
     "C3 AI unifies those records into one model of the supply chain.",
-    "Then AI forecasts demand against stock on hand — and flags a shortfall before it happens.",
+    "Then AI forecasts demand against stock on hand, and flags a shortfall before it happens.",
   ],
 };
 
@@ -56,10 +56,10 @@ export const C3 = {
 export const ARM = {
   org: "Gies Disruption Labs",
   what: "Robotic arm",
-  role: "Software Engineer Intern — real-time path planning and obstacle avoidance for a six-axis arm, in C++ with ROS and Gazebo.",
+  role: "Software Engineer: real-time path planning and obstacle avoidance for a six-axis arm, in C++ with ROS and Gazebo.",
   href: "https://v0-lerobot-arm.vercel.app/",
   steps: [
-    "Six joints, each with its own range of motion — moving as one.",
+    "Six joints, each with its own range of motion, moving as one.",
     "The straight line to the target runs right through an obstacle.",
     "So the path is planned around it, and recomputed in real time.",
   ],
@@ -120,7 +120,7 @@ export const PROJECTS: Project[] = [
     mark: "1st",
     markNote: "HackIllinois 2025",
     title: "FarmSmart",
-    line: "An AI assistant that helps farmers read their own fields — crop‑disease detection at 85% accuracy, plus revenue forecasts.",
+    line: "An AI assistant that helps farmers read their own fields: crop‑disease detection at 85% accuracy, plus revenue forecasts.",
     links: [
       { href: "https://devpost.com/software/farmsmart-b8uskz", label: "Devpost" },
       { href: "https://github.com/mridhanbalaji/FarmSmart", label: "Code" },
