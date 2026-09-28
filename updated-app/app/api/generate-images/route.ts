@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import Replicate from 'replicate';
+import { supabaseServer } from '@/lib/supabase-server';
 import { createCanvas, loadImage } from 'canvas';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'fs';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// Initialize Replicate client
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN!,
-});
 
 interface GenerateImageRequest {
   prompt: string;
@@ -26,6 +16,10 @@ interface GenerateImageRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    // Clients are created per request, not at module load, so building the
+    // app never depends on these secrets being present.
+    const supabase = supabaseServer();
+    const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN! });
     const body: GenerateImageRequest = await request.json();
     const { prompt, aspect_ratio = "1:1", safety_filter_level = "block_only_high", output_format = "png" } = body;
 

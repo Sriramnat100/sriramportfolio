@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log('SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 8) + '...');
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function POST(req: NextRequest) {
+  const supabase = supabaseServer();
   const { email, prompt, image_url } = await req.json();
 
   if (!email || !prompt) {

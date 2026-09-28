@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabaseServer } from '@/lib/supabase-server';
 
 // Returns whether an email has been seen before (i.e. already verified once).
 export async function POST(req: NextRequest) {
+  const supabase = supabaseServer();
   const { email } = await req.json();
 
   if (!email || typeof email !== 'string') {
