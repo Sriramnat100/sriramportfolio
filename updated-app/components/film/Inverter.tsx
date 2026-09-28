@@ -85,6 +85,7 @@ export default function Inverter() {
             {RIVIAN.company} · {RIVIAN.when}
           </p>
           <h2 id="rivian-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "120ms" }}>
+            <span className="sr-only">Rivian: </span>
             DC in.
             <br className="sm:hidden" /> Motion out.
           </h2>
@@ -93,6 +94,7 @@ export default function Inverter() {
         <svg
           viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="none"
+          data-film-draw
           className="h-[30svh] w-full overflow-visible"
           role="img"
           aria-label="A train of switching pulses whose widths follow a sine wave; their average draws a smooth sine, then two more sine waves offset by 120 degrees."
@@ -152,7 +154,7 @@ export default function Inverter() {
               ))}
             </ol>
           ) : (
-            <div className="t-title grid max-w-[26ch] [&>*]:[grid-area:1/1]">
+            <div data-film-stack className="t-title grid max-w-[26ch] [&>*]:[grid-area:1/1]">
               {RIVIAN.steps.map((s, i) => (
                 <motion.p key={s} style={{ opacity: caps[i] }}>
                   {s}

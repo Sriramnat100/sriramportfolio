@@ -222,7 +222,7 @@ body {
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 0.24em;
-    text-decoration-color: color-mix(in srgb, currentColor 32%, transparent);
+    text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
     transition: text-decoration-color 0.3s ease, color 0.3s ease;
   }
   .link:hover {
@@ -261,6 +261,35 @@ html.js .reveal.is-in {
   opacity: 1;
   transform: none;
 }
+/* Without script (or if the page's bundle failed and the layout released
+   the reveals), show every scroll-driven scene in its finished state. */
+html:not(.js) .manifesto-word {
+  opacity: 1 !important;
+}
+html:not(.js) [data-film-stack] > * {
+  grid-area: auto !important;
+  opacity: 1 !important;
+}
+html:not(.js) [data-film-veil] {
+  display: none;
+}
+/* Only strokes framer draws (it marks them pathLength="1"), so lines that
+   are dashed on purpose keep their dashes. */
+html:not(.js) [data-film-draw] [pathLength] {
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
+}
+html:not(.js) [data-film-show] * {
+  opacity: 1 !important;
+}
+html:not(.js) [data-film-handoff],
+html:not(.js) [data-film-night] {
+  display: none;
+}
+html:not(.js) [data-film-draw] clipPath rect {
+  width: 100% !important;
+}
+
 /* Anything holding keyboard focus is always visible. */
 html.js .reveal:focus-within {
   opacity: 1;

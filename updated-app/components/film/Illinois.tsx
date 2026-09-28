@@ -103,6 +103,7 @@ function Drawing({
     <svg
       viewBox={viewBox}
       preserveAspectRatio="xMidYMax meet"
+      data-film-draw
       className={className}
       role="img"
       aria-label="A line drawing of Foellinger Auditorium on the Main Quad: a ribbed dome with a lantern above a six-column portico, with trees on either side of the lawn."

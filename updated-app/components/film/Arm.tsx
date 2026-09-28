@@ -55,6 +55,7 @@ export default function Arm() {
             {ARM.org} · {ARM.what}
           </p>
           <h2 id="arm-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "120ms" }}>
+            <span className="sr-only">Gies Disruption Labs robotic arm: </span>
             Six axes.
             <br className="sm:hidden" /> One clear path.
           </h2>
@@ -73,7 +74,7 @@ export default function Arm() {
               ))}
             </ol>
           ) : (
-            <div className="t-title grid max-w-[30ch] [&>*]:[grid-area:1/1]">
+            <div data-film-stack className="t-title grid max-w-[30ch] [&>*]:[grid-area:1/1]">
               {ARM.steps.map((s, i) => (
                 <motion.p key={s} style={{ opacity: caps[i] }}>
                   {s}
@@ -121,6 +122,8 @@ function Scene({
     <svg
       viewBox={viewBox}
       preserveAspectRatio={`xMidYMid ${fit}`}
+      data-film-draw
+      data-film-show
       className={className}
       style={{ aspectRatio: viewBox.split(" ").slice(2).join(" / ") }}
       role="img"

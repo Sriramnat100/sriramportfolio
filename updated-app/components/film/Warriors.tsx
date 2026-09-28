@@ -60,6 +60,7 @@ export default function Warriors() {
     <section ref={ref} aria-labelledby="warriors-title" data-nav-theme="light" className="theme-light relative isolate">
       <motion.div
         aria-hidden
+        data-film-night
         style={{ opacity: night }}
         className="pointer-events-none absolute inset-0 -z-10 bg-black will-change-[opacity]"
       />
@@ -97,7 +98,7 @@ export default function Warriors() {
               role="img"
               aria-label={`Half-court shot chart: all ${TOTAL} three-pointers Stephen Curry made in the 2018–19 regular season, clustered around the arc, heaviest on the left and right wings.`}
             >
-              <g fill="none" stroke="currentColor" strokeOpacity="0.28" strokeWidth="1.25" vectorEffect="non-scaling-stroke">
+              <g fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="1.25" vectorEffect="non-scaling-stroke">
                 <rect x="0" y="0" width="500" height="470" vectorEffect="non-scaling-stroke" />
                 <path d="M30 470 V328 A237.5 237.5 0 0 1 470 328 V470" vectorEffect="non-scaling-stroke" />
                 <rect x="170" y="280" width="160" height="190" vectorEffect="non-scaling-stroke" />

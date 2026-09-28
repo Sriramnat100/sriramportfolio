@@ -30,6 +30,7 @@ export default function Scan() {
         <div>
           <p className="t-eyebrow reveal">Research</p>
           <h2 id="scan-title" className="t-headline reveal mt-2" style={{ ["--d" as string]: "100ms" }}>
+            <span className="sr-only">Research: </span>
             Reading the brain, early.
           </h2>
         </div>
@@ -42,7 +43,7 @@ export default function Scan() {
             sizes="(max-width: 640px) 80vw, 520px"
             className="object-contain"
           />
-          <motion.div aria-hidden style={{ scaleY: veil }} className="absolute inset-0 origin-bottom bg-black/85" />
+          <motion.div aria-hidden data-film-veil style={{ scaleY: veil }} className="absolute inset-0 origin-bottom bg-black/85" />
           <motion.div aria-hidden style={{ y: line, opacity: lineOpacity }} className="absolute inset-0">
             <div className="h-px w-full bg-paper/80" />
           </motion.div>

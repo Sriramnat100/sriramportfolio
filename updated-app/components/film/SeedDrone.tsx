@@ -34,6 +34,7 @@ export default function SeedDrone() {
       <div className="frame relative z-10">
         <p className="t-eyebrow reveal">{SEED_DRONE.title}</p>
         <h2 id="drone-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "100ms" }}>
+          <span className="sr-only">Seed Drone: </span>
           Planting
           <br />
           from the air.

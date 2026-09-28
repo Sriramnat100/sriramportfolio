@@ -125,6 +125,7 @@ export default function Unify() {
             {C3.company} · {C3.client} · {C3.when}
           </p>
           <h2 id="c3-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "120ms" }}>
+            <span className="sr-only">C3 AI: </span>
             Supply in.
             <br className="sm:hidden" /> Readiness out.
           </h2>
@@ -143,7 +144,7 @@ export default function Unify() {
               ))}
             </ol>
           ) : (
-            <div className="t-title grid max-w-[34ch] [&>*]:[grid-area:1/1]">
+            <div data-film-stack className="t-title grid max-w-[34ch] [&>*]:[grid-area:1/1]">
               {C3.steps.map((s, i) => (
                 <motion.p key={s} style={{ opacity: caps[i] }}>
                   {s}
@@ -186,12 +187,14 @@ function Diagram({
   return (
     <svg
       viewBox={`0 0 ${L.vb[0]} ${L.vb[1]}`}
+      data-film-draw
+      data-film-show
       className={className}
       role="img"
       aria-label="Diagram. Records from suppliers, contracts, depots, orders and maintenance flow into one data model. A forecast then shows demand rising while stock on hand falls; where they cross, a shortfall is flagged."
     >
       {/* 1 + 2: the sources and the model they stream into */}
-      <motion.g style={{ opacity: handoff }}>
+      <motion.g style={{ opacity: handoff }} {...(L.handoff ? { "data-film-handoff": "" } : {})}>
         <motion.g style={{ opacity: labels }} fill="#86868b" {...text}>
           {C3.sources.map((s, i) => (
             <text key={s} x="0" y={L.rows[i] + L.font * 0.35}>
