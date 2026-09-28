@@ -16,8 +16,8 @@ import RevealObserver from "@/components/film/RevealObserver";
 // The homepage is a sequence of scenes, each carrying one idea:
 //   01 Hero       the name, as a title card
 //   02 Manifesto  what kind of software
-//   03 Inverter   Rivian — shown, not listed
-//   04 Unify      C3 AI and the Defense Logistics Agency — the same treatment
+//   03 Unify      C3 AI and the Defense Logistics Agency — most recent first
+//   04 Inverter   Rivian — shown, not listed, the same treatment
 //   05 Arm        Gies Disruption Labs — the six-axis arm and its path planning
 //   06 Earlier    the rest of the résumé, quietly
 //   07 Wins       projects, one figure each
@@ -36,8 +36,8 @@ export default function Home() {
       <main id="main">
         <Hero />
         <Manifesto />
-        <Inverter />
         <Unify />
+        <Inverter />
         <Arm />
         <Earlier />
         <Wins />

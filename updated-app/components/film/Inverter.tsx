@@ -74,7 +74,6 @@ export default function Inverter() {
   return (
     <section
       ref={ref}
-      id="work"
       aria-labelledby="rivian-title"
       data-nav-theme="dark"
       className="relative h-[300vh] bg-black motion-reduce:h-auto"

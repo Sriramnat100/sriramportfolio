@@ -115,6 +115,7 @@ export default function Unify() {
   return (
     <section
       ref={ref}
+      id="work"
       aria-labelledby="c3-title"
       data-nav-theme={WORK_ON_WHITE ? "light" : "dark"}
       className={`relative h-[300vh] motion-reduce:h-auto ${WORK_ON_WHITE ? "theme-white" : "bg-coal"}`}
