@@ -168,26 +168,17 @@ body {
     color: transparent;
   }
 
-  /* The surname: the same light, one step further from it. */
-  .lit-dim {
-    background-image: linear-gradient(
-      180deg,
-      #d2d2d7 0%,
-      #a1a1a6 34%,
-      #5a5a5f 72%,
-      #232325 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  /* The name shines. Three layers clipped to the letters:
-       1. a specular highlight that follows the pointer (--mx/--my/--ma are
-          set by the hero on pointer move; hidden until the pointer arrives),
-       2. a band of light that sweeps across every few seconds, then rests,
-       3. the lit gradient itself. */
-  .lit-sheen {
+  /* The name, as chrome — after the lit letters on Apple's Pro pages. Layers,
+     top to bottom, all clipped to the glyphs:
+       1. a specular glint that follows the pointer (--mx/--my/--ma set by
+          the hero; hidden until a mouse arrives),
+       2. an iridescent band that sweeps across every few seconds,
+       3. faint cool/warm casts from either side,
+       4. the chrome itself: bright rim, dark horizon band, bright rim.
+     Rim light and bloom come from drop-shadows, which follow the outer
+     silhouette only (a text-stroke would trace the variable font's
+     overlapping contours and draw lines inside A, M, N and J). */
+  .chrome {
     background-image:
       radial-gradient(
         circle 240px at var(--mx, 50%) var(--my, -80%),
@@ -197,32 +188,61 @@ body {
       ),
       linear-gradient(
         104deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.35) 46%,
+        transparent 38%,
+        rgba(140, 180, 255, 0.35) 45%,
         rgba(255, 255, 255, 0.95) 50%,
-        rgba(255, 255, 255, 0.35) 54%,
-        transparent 60%
+        rgba(255, 200, 140, 0.4) 55%,
+        transparent 62%
       ),
-      var(--lit-base);
-    background-size: 100% 100%, 300% 100%, 100% 100%;
+      linear-gradient(
+        96deg,
+        rgba(120, 160, 255, 0.22) 0%,
+        rgba(255, 255, 255, 0) 28%,
+        rgba(255, 255, 255, 0) 62%,
+        rgba(255, 176, 120, 0.2) 86%,
+        rgba(120, 160, 255, 0.12) 100%
+      ),
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #ececf0 10%,
+        #b1b1b8 27%,
+        #616168 44%,
+        #2c2c30 52%,
+        #505057 60%,
+        #a1a1a9 76%,
+        #e6e6eb 90%,
+        #ffffff 100%
+      );
+    background-size: 100% 100%, 300% 100%, 100% 100%, 100% 100%;
     background-repeat: no-repeat;
-    background-position: 0 0, 120% 0, 0 0;
-    animation: film-shine 7s cubic-bezier(0.45, 0, 0.2, 1) 0.9s infinite;
+    background-position: 0 0, 120% 0, 0 0, 0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 -0.005em 0 rgba(255, 255, 255, 0.6)) drop-shadow(0 0 0.28em rgba(255, 255, 255, 0.1));
+    animation:
+      film-chrome-in 2.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--in, 0.15s) both,
+      film-shine 7s cubic-bezier(0.45, 0, 0.2, 1) calc(var(--in, 0.15s) + 2.4s) infinite;
     transition: --ma 0.6s ease;
   }
-  .lit.lit-sheen {
-    --lit-base: linear-gradient(180deg, #ffffff 0%, #ececf0 18%, #b4b4ba 46%, #5a5a5f 76%, #232325 100%);
-  }
-  .lit-dim.lit-sheen {
-    --lit-base: linear-gradient(180deg, #d2d2d7 0%, #a1a1a6 34%, #5a5a5f 72%, #232325 100%);
+  @keyframes film-chrome-in {
+    from {
+      opacity: 0;
+      filter: blur(16px) brightness(0.3) drop-shadow(0 -0.005em 0 rgba(255, 255, 255, 0)) drop-shadow(0 0 0.28em rgba(255, 255, 255, 0));
+    }
+    to {
+      opacity: 1;
+      filter: blur(0) brightness(1) drop-shadow(0 -0.005em 0 rgba(255, 255, 255, 0.6)) drop-shadow(0 0 0.28em rgba(255, 255, 255, 0.1));
+    }
   }
   @keyframes film-shine {
     0% {
-      background-position: 0 0, 120% 0, 0 0;
+      background-position: 0 0, 120% 0, 0 0, 0 0;
     }
     32%,
     100% {
-      background-position: 0 0, -20% 0, 0 0;
+      background-position: 0 0, -20% 0, 0 0, 0 0;
     }
   }
 
@@ -353,11 +373,9 @@ html.js .reveal:focus-within {
    than an observer. */
 @keyframes film-letters {
   from {
-    opacity: 0;
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }
@@ -380,7 +398,7 @@ html.js .reveal:focus-within {
   }
 }
 .intro-letters {
-  animation: film-letters 2.4s var(--ease-film) both;
+  animation: film-letters 3s var(--ease-film) both;
 }
 .intro-portrait {
   animation: film-rise 2s var(--ease-film) 0.2s both;
@@ -405,7 +423,7 @@ html.js .reveal:focus-within {
   .intro-portrait,
   .intro-copy,
   .intro-aside,
-  .lit-sheen {
+  .chrome {
     animation: none;
   }
   .shot {

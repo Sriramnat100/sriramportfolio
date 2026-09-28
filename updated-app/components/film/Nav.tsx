@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { NAV, PERSON } from "@/lib/content";
 
-// Transparent over the hero, then a thin blurred bar. It also flips to dark
-// text once a light scene slides underneath it.
+// Out of the way on the hero — the name is the whole first screen — then it
+// slides in as a thin blurred bar once the hero is mostly gone, and flips to
+// dark text when a light scene is underneath it.
 export default function Nav() {
-  const [solid, setSolid] = useState(false);
+  const [shown, setShown] = useState(false);
   const [light, setLight] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setSolid(window.scrollY > 24);
+    const onScroll = () => setShown(window.scrollY > window.innerHeight * 0.7);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
 
@@ -33,16 +34,18 @@ export default function Nav() {
     };
   }, []);
 
-  const bar = solid
-    ? light
-      ? "bg-paper/75 text-coal shadow-[0_1px_0_rgba(0,0,0,0.08)] backdrop-blur-xl backdrop-saturate-150"
-      : "bg-black/60 text-paper shadow-[0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-xl backdrop-saturate-150"
-    : light
-      ? "text-coal"
-      : "text-paper";
+  const bar = light
+    ? "bg-paper/75 text-coal shadow-[0_1px_0_rgba(0,0,0,0.08)] backdrop-blur-xl backdrop-saturate-150"
+    : "bg-black/60 text-paper shadow-[0_1px_0_rgba(255,255,255,0.07)] backdrop-blur-xl backdrop-saturate-150";
 
+  // While hidden it's also out of the tab order (invisible), so keyboard
+  // focus never lands on a bar nobody can see.
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow] duration-500 ${bar}`}>
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-[transform,opacity,visibility,background-color,color,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${bar} ${
+        shown ? "visible translate-y-0 opacity-100" : "invisible -translate-y-full opacity-0"
+      }`}
+    >
       <nav aria-label="Primary" className="frame flex h-12 items-center justify-between">
         <a href="#top" className="whitespace-nowrap text-[14px] font-semibold tracking-[-0.01em]">
           {PERSON.name}

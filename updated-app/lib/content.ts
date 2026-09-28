@@ -16,8 +16,9 @@ export const NAV = [
 ];
 
 // Scene 02 — read word by word as the page scrolls.
+// Software first; forward-deployed; hardware as one strand of it.
 export const MANIFESTO =
-  "I build where software meets the real world. An electric vehicle’s inverter. A six‑axis robotic arm. A drone that plants seeds. Models that read crops, machinery, and brain scans.";
+  "I’m a software engineer who builds end to end, then ships it where it’s used. Forward‑deployed AI for federal teams. Firmware for an electric vehicle’s inverter. Full‑stack products with real users. Models that read crops, machinery, and brain scans.";
 
 // Scene 03 — the inverter, explained while the waveform builds.
 export const RIVIAN = {

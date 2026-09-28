@@ -74,18 +74,18 @@ export default function Hero() {
         className="frame absolute inset-x-0 top-[31svh] sm:top-[13svh]"
       >
         <div ref={blockRef} className="intro-letters w-full">
-          <h1 className="font-bold uppercase tracking-[-0.052em]">
+          <h1 className="font-extrabold uppercase tracking-[-0.04em] [font-family:ui-rounded,var(--font-sans)]">
             <motion.span
               ref={firstRef}
               style={{ y: firstY }}
-              className="lit lit-sheen block w-max whitespace-nowrap text-[26vw] leading-[0.8] will-change-transform"
+              className="chrome block w-max whitespace-nowrap text-[25vw] leading-[0.82] will-change-transform [--in:0.15s]"
             >
               Sriram
             </motion.span>{" "}
             <motion.span
               ref={lastRef}
               style={{ y: lastY }}
-              className="lit-dim lit-sheen mt-[0.09em] block w-max whitespace-nowrap text-[14.6vw] leading-[0.8] will-change-transform"
+              className="chrome mt-[0.09em] block w-max whitespace-nowrap text-[14.2vw] leading-[0.82] will-change-transform [--in:0.55s]"
             >
               Natarajan
             </motion.span>

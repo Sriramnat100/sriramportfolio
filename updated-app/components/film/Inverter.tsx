@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useCalm } from "./useCalm";
 import { RIVIAN } from "@/lib/content";
+import Brand from "./Brand";
 
 // Scene 03. What an inverter does, drawn by the scroll: a pulse train whose
 // widths follow a sine, the sine that its average becomes, then the two
@@ -81,10 +82,8 @@ export default function Inverter() {
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between overflow-hidden pb-[7svh] pt-[15svh]">
         <div className="frame">
-          <p className="t-eyebrow reveal">
-            {RIVIAN.company} · {RIVIAN.when}
-          </p>
-          <h2 id="rivian-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "120ms" }}>
+          <Brand logo="/film/logos/rivian-mark.png" name={RIVIAN.company} meta={RIVIAN.when} />
+          <h2 id="rivian-title" className="t-headline reveal mt-4" style={{ ["--d" as string]: "120ms" }}>
             <span className="sr-only">Rivian: </span>
             DC in.
             <br className="sm:hidden" /> Motion out.

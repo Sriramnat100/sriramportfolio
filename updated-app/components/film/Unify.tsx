@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { useCalm } from "./useCalm";
 import { C3, WORK_ON_WHITE } from "@/lib/content";
+import Brand from "./Brand";
 
 // Scene 04. The Defense Logistics Agency work at C3 AI, drawn by the scroll
 // the way the inverter was, as a labelled three-part diagram:
@@ -121,10 +122,13 @@ export default function Unify() {
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between overflow-hidden pb-[7svh] pt-[14svh]">
         <div className="frame">
-          <p className="t-eyebrow reveal">
-            {C3.company} · {C3.client} · {C3.when}
-          </p>
-          <h2 id="c3-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "120ms" }}>
+          <Brand
+            logo="/film/logos/c3-mark.png"
+            name={C3.company}
+            meta={`${C3.client} · ${C3.when}`}
+            invert={!WORK_ON_WHITE}
+          />
+          <h2 id="c3-title" className="t-headline reveal mt-4" style={{ ["--d" as string]: "120ms" }}>
             <span className="sr-only">C3 AI: </span>
             Supply in.
             <br className="sm:hidden" /> Readiness out.
