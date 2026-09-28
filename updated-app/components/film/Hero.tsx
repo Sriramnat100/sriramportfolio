@@ -122,9 +122,9 @@ export default function Hero() {
         className="hero-copy frame absolute inset-x-0 bottom-0 flex flex-col gap-5 pb-[max(36px,6svh)] md:flex-row md:items-end md:justify-between"
       >
         <p className="intro-copy t-display">
-          From model
+          From concept
           <br />
-          to machine.
+          to reality.
         </p>
         <div className="intro-aside max-w-[19rem] md:pb-2 md:text-right">
           <p className="t-small">
