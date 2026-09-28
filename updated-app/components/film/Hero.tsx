@@ -36,6 +36,21 @@ export default function Hero() {
     return () => ro.disconnect();
   }, []);
 
+  // Light follows the pointer across the letters (fine pointers only).
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (e.pointerType !== "mouse" || calm) return;
+    for (const el of [firstRef.current, lastRef.current]) {
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+      el.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
+      el.style.setProperty("--ma", "0.95");
+    }
+  };
+  const onPointerLeave = () => {
+    for (const el of [firstRef.current, lastRef.current]) el?.style.setProperty("--ma", "0");
+  };
+
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const m = calm ? 0 : 1;
   const firstY = useTransform(scrollYProgress, [0, 1], ["0%", `${-38 * m}%`]);
@@ -51,6 +66,8 @@ export default function Hero() {
       id="top"
       data-nav-theme="dark"
       className="relative h-[100svh] min-h-[560px] overflow-hidden bg-black"
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
     >
       <motion.div
         style={{ opacity: nameOpacity, scale: nameScale }}

@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { useCalm } from "./useCalm";
-import { C3 } from "@/lib/content";
+import { C3, WORK_ON_WHITE } from "@/lib/content";
 
 // Scene 04. The Defense Logistics Agency work at C3 AI, drawn by the scroll
 // the way the inverter was, as a labelled three-part diagram:
@@ -115,8 +115,8 @@ export default function Unify() {
     <section
       ref={ref}
       aria-labelledby="c3-title"
-      data-nav-theme="dark"
-      className="relative h-[300vh] bg-coal motion-reduce:h-auto"
+      data-nav-theme={WORK_ON_WHITE ? "light" : "dark"}
+      className={`relative h-[300vh] motion-reduce:h-auto ${WORK_ON_WHITE ? "theme-white" : "bg-coal"}`}
       style={calm ? { height: "auto" } : undefined}
     >
       <div className="sticky top-0 flex h-[100svh] flex-col justify-between overflow-hidden pb-[7svh] pt-[14svh]">
@@ -195,7 +195,7 @@ function Diagram({
     >
       {/* 1 + 2: the sources and the model they stream into */}
       <motion.g style={{ opacity: handoff }} {...(L.handoff ? { "data-film-handoff": "" } : {})}>
-        <motion.g style={{ opacity: labels }} fill="#86868b" {...text}>
+        <motion.g style={{ opacity: labels }} fill="var(--fg-mute)" {...text}>
           {C3.sources.map((s, i) => (
             <text key={s} x="0" y={L.rows[i] + L.font * 0.35}>
               {s}
@@ -210,10 +210,10 @@ function Diagram({
             height={L.box.h}
             rx="16"
             fill="none"
-            stroke="#48484a"
+            stroke="var(--fg-line)"
             strokeWidth="1.5"
           />
-          <text x={L.modelLabel[0]} y={L.modelLabel[1]} textAnchor="middle" fill="#f5f5f7" {...text}>
+          <text x={L.modelLabel[0]} y={L.modelLabel[1]} textAnchor="middle" fill="var(--fg)" {...text}>
             One data model
           </text>
         </motion.g>
@@ -225,59 +225,59 @@ function Diagram({
           return <Record key={i} p={p} calm={calm} from={from} to={to} r={L.dotR} src={src} n={n} />;
         })}
         {L.arrow && (
-          <motion.path d={L.arrow} style={{ opacity: axes }} fill="none" stroke="#86868b" strokeWidth="1.5" />
+          <motion.path d={L.arrow} style={{ opacity: axes }} fill="none" stroke="var(--fg-mute)" strokeWidth="1.5" />
         )}
       </motion.g>
 
       {/* 3: the forecast */}
       <motion.g style={{ opacity: axes }}>
-        <path d={L.chart.axis} fill="none" stroke="#48484a" strokeWidth="1.5" />
-        <text x={L.chart.labels.weeks[0]} y={L.chart.labels.weeks[1]} textAnchor="end" fill="#86868b" {...text}>
+        <path d={L.chart.axis} fill="none" stroke="var(--fg-line)" strokeWidth="1.5" />
+        <text x={L.chart.labels.weeks[0]} y={L.chart.labels.weeks[1]} textAnchor="end" fill="var(--fg-mute)" {...text}>
           Weeks ahead
         </text>
       </motion.g>
       <motion.path
         d={shortfallArea(L.chart.demand, L.chart.stock)}
-        fill="#f5f5f7"
+        fill="var(--fg)"
         fillOpacity={0.12}
         style={{ opacity: area }}
       />
       <motion.path
         d={bezPath(L.chart.stock)}
         fill="none"
-        stroke="#86868b"
+        stroke="var(--fg-mute)"
         strokeWidth="2.5"
         style={{ pathLength: lines }}
       />
       <motion.path
         d={bezPath(L.chart.demand)}
         fill="none"
-        stroke="#f5f5f7"
+        stroke="var(--fg)"
         strokeWidth="3"
         style={{ pathLength: lines }}
       />
       <motion.g style={{ opacity: axes }} {...text}>
-        <text x={L.chart.labels.stock[0]} y={L.chart.labels.stock[1]} fill="#86868b">
+        <text x={L.chart.labels.stock[0]} y={L.chart.labels.stock[1]} fill="var(--fg-mute)">
           Stock on hand
         </text>
-        <text x={L.chart.labels.demand[0]} y={L.chart.labels.demand[1]} fill="#f5f5f7">
+        <text x={L.chart.labels.demand[0]} y={L.chart.labels.demand[1]} fill="var(--fg)">
           Forecast demand
         </text>
       </motion.g>
       <motion.g style={{ opacity: flag }} {...text}>
-        <text x={L.chart.labels.shortfall[0]} y={L.chart.labels.shortfall[1]} textAnchor="middle" fill="#f5f5f7">
+        <text x={L.chart.labels.shortfall[0]} y={L.chart.labels.shortfall[1]} textAnchor="middle" fill="var(--fg)">
           Shortfall
         </text>
         <path
           d={`M${cx} ${cy} V${L.chart.base}`}
-          stroke="#f5f5f7"
+          stroke="var(--fg)"
           strokeOpacity="0.5"
           strokeWidth="1.5"
           strokeDasharray="4 6"
         />
-        <circle cx={cx} cy={cy} r="7" fill="#f5f5f7" />
-        <circle cx={cx} cy={cy} r="15" fill="none" stroke="#f5f5f7" strokeOpacity="0.45" />
-        <text x={L.chart.labels.flag[0]} y={L.chart.labels.flag[1]} textAnchor="middle" fill="#f5f5f7" fontWeight="600">
+        <circle cx={cx} cy={cy} r="7" fill="var(--fg)" />
+        <circle cx={cx} cy={cy} r="15" fill="none" stroke="var(--fg)" strokeOpacity="0.45" />
+        <text x={L.chart.labels.flag[0]} y={L.chart.labels.flag[1]} textAnchor="middle" fill="var(--fg)" fontWeight="600">
           Flagged
         </text>
       </motion.g>
@@ -309,6 +309,6 @@ function Record({
   const opacity = useTransform(p, (v) => (calm ? 1 : clamp((v - a) / 0.05)));
   const x = useTransform(p, (v) => mix(from[0], to[0], t(v)));
   const y = useTransform(p, (v) => mix(from[1], to[1], t(v)));
-  const fill = useTransform(p, (v) => (t(v) > 0.5 ? "#d1d1d6" : "#8e8e93"));
+  const fill = useTransform(p, (v) => (t(v) > 0.5 ? "var(--dot-b)" : "var(--dot-a)"));
   return <motion.circle cx={x} cy={y} r={r} style={{ opacity, fill }} />;
 }

@@ -11,7 +11,7 @@ import { SEED_DRONE } from "@/lib/content";
 // falling from the payload — driven by the scroll, never on a loop.
 
 // Where the payload's drop tube sits in the photo (fractions of the frame).
-const TUBE = { x: 0.527, y: 0.955 };
+const TUBE = { x: 0.532, y: 0.886 };
 const SEEDS = [
   { dx: -0.012, start: 0.22, speed: 1 },
   { dx: 0.01, start: 0.3, speed: 0.86 },
@@ -41,13 +41,13 @@ export default function SeedDrone() {
         </h2>
       </div>
 
-      <motion.div style={{ y: lift, scale }} className="relative mx-auto mt-[6svh] w-[108vw] max-w-[1500px] sm:mt-[2svh] sm:w-[80vw]">
-        <div className="relative aspect-[1672/941]">
+      <motion.div style={{ y: lift, scale }} className="relative mx-auto mt-[2svh] w-[108vw] max-w-[1400px] sm:-mt-[16svh] sm:w-[72vw]">
+        <div className="relative aspect-[1448/1086]">
           <Image
             src="/film/seed-drone.webp"
             alt="A white quadcopter in flight against black, carrying a custom seed-dispersal payload — wired electronics on a black mounting plate above a cylindrical drop tube."
             fill
-            sizes="(max-width: 640px) 108vw, 88vw"
+            sizes="(max-width: 640px) 108vw, 72vw"
             className="object-contain"
           />
           {!calm &&

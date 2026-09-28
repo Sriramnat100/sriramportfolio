@@ -31,6 +31,10 @@ export const RIVIAN = {
   ],
 };
 
+// Trial: the two charcoal scenes (C3 AI and "Along the way") on white.
+// Set to false to put them back on charcoal.
+export const WORK_ON_WHITE = true;
+
 // Scene 04 — the Defense Logistics Agency work at C3 AI, drawn the same way
 // as the inverter. "About 5 million items" is from the Congressional Research
 // Service primer on DLA (IF11543, Dec 2024).
@@ -156,13 +160,18 @@ export const SEED_DRONE = {
   href: "https://seedrone.vercel.app",
 };
 
+// Grouped by department, highest level first; fills a 4-column grid in 3 rows.
 export const COURSES = [
-  { code: "CS 374", title: "Algorithms & Models of Computation" },
+  { code: "CS 441", title: "Applied Machine Learning" },
+  { code: "CS 421", title: "Programming Languages & Compilers" },
   { code: "CS 411", title: "Database Systems" },
-  { code: "CS 225", title: "Data Structures" },
+  { code: "CS 374", title: "Algorithms & Models of Computation" },
   { code: "CS 233", title: "Computer Architecture" },
+  { code: "CS 225", title: "Data Structures" },
   { code: "CS 173", title: "Discrete Structures" },
+  { code: "LING 406", title: "Introduction to Computational Linguistics" },
+  { code: "LING 307", title: "Elements of Semantics & Pragmatics" },
+  { code: "LING 270", title: "Language, Technology & Society" },
   { code: "STAT 400", title: "Statistics & Probability" },
   { code: "MATH 257", title: "Linear Algebra with Computational Applications" },
-  { code: "LING 270", title: "Language, Technology & Society" },
 ];

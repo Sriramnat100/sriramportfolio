@@ -60,7 +60,7 @@ export default function Illinois() {
           </div>
 
           <motion.p style={{ opacity: caption }} className="frame t-small mt-3 text-center">
-            Foellinger Auditorium, on the Main Quad.
+            Main Quad, UIUC.
           </motion.p>
         </div>
       </div>

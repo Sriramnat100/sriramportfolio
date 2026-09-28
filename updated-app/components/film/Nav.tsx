@@ -44,12 +44,14 @@ export default function Nav() {
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow] duration-500 ${bar}`}>
       <nav aria-label="Primary" className="frame flex h-12 items-center justify-between">
-        <a href="#top" className="text-[14px] font-semibold tracking-[-0.01em]">
+        <a href="#top" className="whitespace-nowrap text-[14px] font-semibold tracking-[-0.01em]">
           {PERSON.name}
         </a>
         <ul className="flex items-center gap-5 text-[12px] sm:gap-8 sm:text-[13px]">
           {NAV.map((item) => (
-            <li key={item.href} className={item.label === "Illinois" ? "hidden sm:block" : ""}>
+            <li key={item.href} className={
+                item.label === "Illinois" ? "hidden sm:block" : item.label === "Projects" ? "max-[380px]:hidden" : ""
+              }>
               <a href={item.href} className="opacity-80 transition-opacity duration-300 hover:opacity-100">
                 {item.label}
               </a>

@@ -19,9 +19,24 @@
   --ease-film: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@property --ma {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
 :root {
   /* One side margin for every scene, so edges line up down the whole page. */
   --gutter: clamp(24px, 6.25vw, 120px);
+
+  /* Scene colors for dark surfaces; light surfaces override them below. */
+  --fg: #f5f5f7;
+  --fg-mute: #86868b;
+  --fg-line: #48484a;
+  --rule: rgba(66, 66, 69, 0.7);
+  --tile-ring: rgba(255, 255, 255, 0.1);
+  --dot-a: #8e8e93;
+  --dot-b: #d1d1d6;
 }
 
 /* ---------------------------------------------------------------- base */
@@ -167,16 +182,33 @@ body {
     color: transparent;
   }
 
-  /* One pass of light across the lettering on arrival, then it rests. The
-     sheen is a second background layer riding over the lit gradient. */
+  /* The name shines. Three layers clipped to the letters:
+       1. a specular highlight that follows the pointer (--mx/--my/--ma are
+          set by the hero on pointer move; hidden until the pointer arrives),
+       2. a band of light that sweeps across every few seconds, then rests,
+       3. the lit gradient itself. */
   .lit-sheen {
     background-image:
-      linear-gradient(104deg, transparent 43%, rgba(255, 255, 255, 0.5) 50%, transparent 57%),
+      radial-gradient(
+        circle 240px at var(--mx, 50%) var(--my, -80%),
+        rgba(255, 255, 255, var(--ma, 0)) 0,
+        rgba(255, 255, 255, calc(var(--ma, 0) * 0.45)) 38%,
+        rgba(255, 255, 255, 0) 100%
+      ),
+      linear-gradient(
+        104deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.35) 46%,
+        rgba(255, 255, 255, 0.95) 50%,
+        rgba(255, 255, 255, 0.35) 54%,
+        transparent 60%
+      ),
       var(--lit-base);
-    background-size: 300% 100%, 100% 100%;
+    background-size: 100% 100%, 300% 100%, 100% 100%;
     background-repeat: no-repeat;
-    background-position: 120% 0, 0 0;
-    animation: film-sheen 2.8s cubic-bezier(0.45, 0, 0.2, 1) 1s both;
+    background-position: 0 0, 120% 0, 0 0;
+    animation: film-shine 7s cubic-bezier(0.45, 0, 0.2, 1) 0.9s infinite;
+    transition: --ma 0.6s ease;
   }
   .lit.lit-sheen {
     --lit-base: linear-gradient(180deg, #ffffff 0%, #ececf0 18%, #b4b4ba 46%, #5a5a5f 76%, #232325 100%);
@@ -184,12 +216,13 @@ body {
   .lit-dim.lit-sheen {
     --lit-base: linear-gradient(180deg, #d2d2d7 0%, #a1a1a6 34%, #5a5a5f 72%, #232325 100%);
   }
-  @keyframes film-sheen {
-    from {
-      background-position: 120% 0, 0 0;
+  @keyframes film-shine {
+    0% {
+      background-position: 0 0, 120% 0, 0 0;
     }
-    to {
-      background-position: -20% 0, 0 0;
+    32%,
+    100% {
+      background-position: 0 0, -20% 0, 0 0;
     }
   }
 
@@ -229,18 +262,28 @@ body {
     text-decoration-color: currentColor;
   }
 
-  /* Light scenes near the end of the page. */
-  .theme-light {
+  /* Light scenes: off-white near the end of the page; pure white for the
+     trial of the work chapter (see WORK_ON_WHITE in lib/content.ts). */
+  .theme-light,
+  .theme-white {
     color-scheme: light;
     background: var(--color-paper);
     color: var(--color-coal);
+    --fg: #1d1d1f;
+    --fg-mute: #6e6e73;
+    --fg-line: #d2d2d7;
+    --rule: #d2d2d7;
+    --tile-ring: rgba(0, 0, 0, 0.08);
+    --dot-a: #aeaeb2;
+    --dot-b: #48484a;
   }
-  .theme-light .t-eyebrow,
-  .theme-light .t-body,
-  .theme-light .t-small {
+  .theme-white {
+    background: #ffffff;
+  }
+  :is(.theme-light, .theme-white) :is(.t-eyebrow, .t-body, .t-small) {
     color: var(--color-mute-2);
   }
-  .theme-light .t-body strong {
+  :is(.theme-light, .theme-white) .t-body strong {
     color: var(--color-coal);
   }
 }

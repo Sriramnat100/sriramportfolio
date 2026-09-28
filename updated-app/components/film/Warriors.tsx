@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import { useCalm } from "./useCalm";
-import { CURRY_THREES } from "@/lib/curry-threes";
+import { CURRY_SEASON, CURRY_THREES } from "@/lib/curry-threes";
 
-// Scene 10. The page turns from night to day on the way in, then holds on a
-// half court while every three Steph Curry made in 2018–19 lands on it, in
-// the order he made them, with the count keeping score.
+// Scene 11. The page turns from night to day on the way in, then holds on a
+// half court while every three Steph Curry made in his 2016–17 championship
+// season lands on it, in the order he made them, with the count keeping score.
 
 const TOTAL = CURRY_THREES.length;
 // Court space: 500 × 470 (tenths of a foot), half-court line at y = 0,
@@ -16,6 +17,10 @@ const TOTAL = CURRY_THREES.length;
 const HOOP_Y = 470 - 52.5;
 const toX = (lx: number) => 250 - lx;
 const toY = (ly: number) => HOOP_Y - ly;
+// The one make from past half court is pinned to the top edge, labelled
+// with its distance.
+const DEEP = CURRY_THREES.find((s) => s && toY(s[1]) < 0) ?? null;
+const DEEP_FT = DEEP ? Math.round(Math.hypot(DEEP[0], DEEP[1]) / 10) : 0;
 
 export default function Warriors() {
   const ref = useRef<HTMLElement>(null);
@@ -73,13 +78,20 @@ export default function Warriors() {
       <div className="sticky top-0 flex min-h-[100svh] items-center pb-[5svh] pt-[10svh]">
         <div className="frame grid w-full items-center gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-[5vw]">
           <div>
+            <Image
+              src="/film/logos/warriors.svg"
+              alt="Golden State Warriors"
+              width={48}
+              height={48}
+              className="reveal mb-6 size-11 sm:size-12"
+            />
             <p className="t-eyebrow reveal">Off the clock</p>
             <h2 id="warriors-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "100ms" }}>
               Huge
               <br /> Warriors fan.
             </h2>
             <p className="reveal mt-6 lg:mt-[10svh]" style={{ ["--d" as string]: "200ms" }}>
-              <span className="sr-only">{TOTAL} threes by </span>
+              <span className="sr-only">{TOTAL} </span>
               <span
                 ref={countRef}
                 aria-hidden
@@ -87,7 +99,10 @@ export default function Warriors() {
               >
                 {TOTAL}
               </span>
-              <span className="t-title mt-3 block">Steph Curry</span>
+              <span className="mt-3 block max-w-[26rem] text-[clamp(19px,1.6vw,24px)] font-semibold leading-snug tracking-[-0.012em]">
+                3 Pointers Made By The Greatest Of All Time, Stephen Curry from{" "}
+                <span className="whitespace-nowrap">2016–2017.</span>
+              </span>
             </p>
           </div>
 
@@ -96,7 +111,7 @@ export default function Warriors() {
               viewBox="0 -14 500 494"
               className="mx-auto block h-auto max-h-[56svh] w-full lg:max-h-[74svh]"
               role="img"
-              aria-label={`Half-court shot chart: all ${TOTAL} three-pointers Stephen Curry made in the 2018–19 regular season, clustered around the arc, heaviest on the left and right wings.`}
+              aria-label={`Half-court shot chart: the ${TOTAL} three-pointers Stephen Curry made in the ${CURRY_SEASON} regular season, clustered around the arc and heaviest on the wings.`}
             >
               <g fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="1.25" vectorEffect="non-scaling-stroke">
                 <rect x="0" y="0" width="500" height="470" vectorEffect="non-scaling-stroke" />
@@ -110,28 +125,23 @@ export default function Warriors() {
                 <path d="M190 0 A60 60 0 0 0 310 0" vectorEffect="non-scaling-stroke" />
               </g>
               <g ref={shotsRef}>
-                {CURRY_THREES.map(([lx, ly], i) => {
-                  const y = toY(ly);
-                  // One make came from 60 feet, past half court: pin it to the
-                  // top edge rather than drop it.
-                  const beyond = y < 0;
-                  return (
-                    <circle
-                      key={i}
-                      className="shot"
-                      cx={toX(lx)}
-                      cy={beyond ? -7 : y}
-                      r="4.2"
-                    />
-                  );
+                {CURRY_THREES.map((shot, i) => {
+                  // A make with no recorded location keeps its place in the
+                  // sequence (so the count stays right) but draws nothing.
+                  if (!shot) return <circle key={i} className="shot" r="0" />;
+                  const y = toY(shot[1]);
+                  return <circle key={i} className="shot" cx={toX(shot[0])} cy={y < 0 ? -7 : y} r="4.2" />;
                 })}
               </g>
-              <text x={toX(CURRY_THREES.find(([, ly]) => toY(ly) < 0)?.[0] ?? 0) + 10} y="-4" className="fill-current text-[11px] opacity-70">
-                60 ft
-              </text>
+              {DEEP && (
+                <text x={toX(DEEP[0]) + 10} y="-4" className="fill-current text-[11px] opacity-70">
+                  {DEEP_FT} ft
+                </text>
+              )}
             </svg>
             <figcaption className="t-small mt-5 text-center lg:text-left">
-              Above: a visualization of every three Steph Curry made in his 2018–19 season. Data: NBA.com/Stats.
+              Above: a visualization of every three Steph Curry made in his 2016–17 season. The most 3 pointers ever
+              made by one player in a championship season. Data: NBA.com/Stats.
             </figcaption>
           </figure>
         </div>

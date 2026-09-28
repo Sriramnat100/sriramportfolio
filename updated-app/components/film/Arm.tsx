@@ -12,11 +12,11 @@ import { ARM } from "@/lib/content";
 // The photo and the overlay share one coordinate space (the photo's own
 // pixels), so they stay aligned at every size. Phones get a tighter crop.
 
-const START = [915, 225] as const; // just under the left arm's tool
-const GOAL = [1068, 660] as const; // between the right arm's open jaws
-const OBSTACLE = { cx: 975, cy: 430, r: 58 };
+const START = [905, 262] as const; // just under the left arm's tool bracket
+const GOAL = [850, 742] as const; // at the mouth of the right arm's open jaws
+const OBSTACLE = { cx: 852, cy: 480, r: 52 };
 const STRAIGHT = `M${START} L${GOAL}`;
-const PLANNED = `M${START} C850 300, 845 520, ${GOAL}`;
+const PLANNED = `M${START} C760 330, 700 600, ${GOAL}`;
 // Where the straight line first meets the obstacle.
 const HIT = (() => {
   const [x0, y0] = START;
@@ -62,8 +62,8 @@ export default function Arm() {
         </div>
 
         <div className="frame min-h-0">
-          <Scene p={p} calm={calm} viewBox="0 0 1812 868" fit="meet" className="mx-auto hidden h-auto max-h-[50svh] w-full md:block" />
-          <Scene p={p} calm={calm} viewBox="600 60 700 760" fit="slice" className="mx-auto block h-auto max-h-[44svh] w-full md:hidden" />
+          <Scene p={p} calm={calm} viewBox="0 0 1672 941" fit="meet" className="mx-auto hidden h-auto max-h-[50svh] w-full md:block" />
+          <Scene p={p} calm={calm} viewBox="520 120 700 760" fit="slice" className="mx-auto block h-auto max-h-[44svh] w-full md:hidden" />
         </div>
 
         <div className="frame grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-16">
@@ -129,15 +129,15 @@ function Scene({
       role="img"
       aria-label="Two white 3D-printed robotic arms on black. Drawn over them: a straight line from one arm's tool to the other's open gripper passes through a circular obstacle, and a curved planned path bends around the obstacle to reach the gripper."
     >
-      <image href="/film/robot-arms.webp" x="0" y="0" width="1812" height="868" />
+      <image href="/film/robot-arms.webp" x="0" y="0" width="1672" height="941" />
 
       {/* Mask regions are pinned to the photo's full frame; the default region
           is measured from the viewBox origin and would clip the phone crop. */}
       <defs>
-        <mask id={`${id}-straight`} maskUnits="userSpaceOnUse" x="0" y="0" width="1812" height="868">
+        <mask id={`${id}-straight`} maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
           <motion.path d={STRAIGHT} stroke="#fff" strokeWidth="12" fill="none" style={{ pathLength: straight }} />
         </mask>
-        <mask id={`${id}-ring`} maskUnits="userSpaceOnUse" x="0" y="0" width="1812" height="868">
+        <mask id={`${id}-ring`} maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
           <motion.circle
             cx={OBSTACLE.cx}
             cy={OBSTACLE.cy}
