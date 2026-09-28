@@ -1,13 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 // The type comes from the system first (SF Pro on Apple devices). Inter is
 // only the fallback for everything else, so it is loaded but never forced.
-const inter = Inter({
+//
+// It is self-hosted — the Latin subset of Inter's variable font (weights
+// 400–800 in one file, SIL Open Font License). next/font/google fetches from
+// Google at build time, and Google intermittently serves font URLs without a
+// file extension, which crashes Next's font loader and fails the build.
+const inter = localFont({
+  src: "./fonts/InterVariable-latin.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "400 800",
+  style: "normal",
   display: "swap",
 });
 
