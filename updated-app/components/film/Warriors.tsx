@@ -75,7 +75,7 @@ export default function Warriors() {
         className="relative h-[210vh] motion-reduce:h-auto"
         style={calm ? { height: "auto" } : undefined}
       >
-      <div className="sticky top-0 flex min-h-[100svh] items-center pb-[5svh] pt-[10svh]">
+      <div className="sticky top-0 flex min-h-[100svh] items-center pb-[5svh] pt-[10svh] [@media(max-height:760px)]:pt-[7svh]">
         <div className="frame grid w-full items-center gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-[5vw]">
           <div>
             <Image
@@ -83,19 +83,19 @@ export default function Warriors() {
               alt="Golden State Warriors"
               width={48}
               height={48}
-              className="reveal mb-6 size-11 sm:size-12"
+              className="reveal mb-6 size-11 sm:size-12 [@media(max-height:760px)]:mb-3 [@media(max-height:760px)]:size-9"
             />
             <p className="t-eyebrow reveal">Off the clock</p>
             <h2 id="warriors-title" className="t-headline reveal mt-3" style={{ ["--d" as string]: "100ms" }}>
               Huge
               <br /> Warriors fan.
             </h2>
-            <p className="reveal mt-6 lg:mt-[10svh]" style={{ ["--d" as string]: "200ms" }}>
+            <p className="reveal mt-6 lg:mt-[10svh] lg:[@media(max-height:760px)]:mt-[4svh]" style={{ ["--d" as string]: "200ms" }}>
               <span className="sr-only">{TOTAL} </span>
               <span
                 ref={countRef}
                 aria-hidden
-                className="block font-bold tabular-nums leading-none tracking-[-0.045em] text-[clamp(56px,7.5vw,120px)]"
+                className="block font-bold tabular-nums leading-none tracking-[-0.045em] text-[clamp(56px,min(7.5vw,15svh),120px)]"
               >
                 {TOTAL}
               </span>
