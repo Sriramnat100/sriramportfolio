@@ -11,6 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.7.0",

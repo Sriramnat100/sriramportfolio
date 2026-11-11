@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
+import { VisitTracker } from "@/components/VisitTracker";
 import "./globals.css";
 
 // The type comes from the system first (SF Pro on Apple devices). Inter is
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body>
         {children}
         <Analytics />
+        <VisitTracker />
       </body>
     </html>
   );
