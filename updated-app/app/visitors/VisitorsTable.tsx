@@ -26,6 +26,83 @@ function source(v: Visit): string {
   }
 }
 
+function referrerHost(v: Visit): string {
+  if (!v.referrer) return "Direct";
+  try {
+    return new URL(v.referrer).hostname.replace(/^www\./, "");
+  } catch {
+    return v.referrer;
+  }
+}
+
+const utmKey = (v: Visit) =>
+  v.utm_source ? [v.utm_source, v.utm_campaign].filter(Boolean).join(" / ") : null;
+
+type Pick = { tab: "ref" | "utm"; value: string } | null;
+
+function matchesPick(v: Visit, pick: Pick): boolean {
+  if (!pick) return true;
+  return pick.tab === "ref" ? referrerHost(v) === pick.value : utmKey(v) === pick.value;
+}
+
+// Unique visitors per referrer or UTM tag, most first, like Vercel's panel.
+function SourcesPanel({ visits, pick, onPick }: { visits: Visit[]; pick: Pick; onPick: (p: Pick) => void }) {
+  const [tab, setTab] = useState<"ref" | "utm">("ref");
+  const rows = useMemo(() => {
+    const people = new Map<string, Set<string>>();
+    for (const v of visits) {
+      const key = tab === "ref" ? referrerHost(v) : utmKey(v);
+      if (!key) continue;
+      if (!people.has(key)) people.set(key, new Set());
+      people.get(key)!.add(v.visitor_id ?? v.session_id);
+    }
+    return [...people].map(([key, set]) => ({ key, count: set.size })).sort((a, b) => b.count - a.count);
+  }, [visits, tab]);
+  const max = rows[0]?.count ?? 1;
+
+  return (
+    <section className={styles.panel}>
+      <div className={styles.tabs}>
+        <button className={tab === "ref" ? styles.tabOn : undefined} onClick={() => setTab("ref")}>Referrers</button>
+        <button className={tab === "utm" ? styles.tabOn : undefined} onClick={() => setTab("utm")}>UTM Parameters</button>
+        {pick && (
+          <button className={styles.clear} onClick={() => onPick(null)}>
+            {pick.value} ✕
+          </button>
+        )}
+        <span className={styles.tabsRight}>Visitors</span>
+      </div>
+      <ul className={styles.bars}>
+        {rows.map(({ key, count }) => {
+          const on = pick?.tab === tab && pick.value === key;
+          return (
+            <li key={key}>
+              <button
+                className={on ? styles.barOn : undefined}
+                onClick={() => onPick(on ? null : { tab, value: key })}
+                title={on ? "Show all" : `Show only ${key}`}
+              >
+                <span className={styles.barFill} style={{ width: `${(count / max) * 100}%` }} />
+                <span className={styles.barLabel}>
+                  {tab === "ref" && key !== "Direct" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(key)}&sz=32`} alt="" width={16} height={16} />
+                  ) : (
+                    <span className={styles.barIcon}>{tab === "ref" ? "→" : "#"}</span>
+                  )}
+                  {key}
+                </span>
+                <span className={styles.barCount}>{count}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {!rows.length && <p className={styles.note}>{tab === "utm" ? "No tagged links used yet." : "No visits yet."}</p>}
+    </section>
+  );
+}
+
 function duration(s: number): string {
   if (s < 60) return `${s}s`;
   const m = Math.floor(s / 60);
@@ -42,10 +119,12 @@ export function VisitorsTable({ visits }: { visits: Visit[] }) {
   const [companiesOnly, setCompaniesOnly] = useState(false);
   const [hideHosting, setHideHosting] = useState(true);
   const [open, setOpen] = useState<string | null>(null);
+  const [pick, setPick] = useState<Pick>(null);
 
   const sources = useMemo(() => [...new Set(visits.map(source))].sort(), [visits]);
 
-  const shown = useMemo(() => {
+  // Every filter except the panel's pick, so the panel keeps all its rows.
+  const base = useMemo(() => {
     const q = query.trim().toLowerCase();
     const since = days === "all" ? 0 : Date.now() - Number(days) * 86400000;
     return visits.filter((v) => {
@@ -64,6 +143,8 @@ export function VisitorsTable({ visits }: { visits: Visit[] }) {
     });
   }, [visits, query, src, days, companiesOnly, hideHosting]);
 
+  const shown = useMemo(() => base.filter((v) => matchesPick(v, pick)), [base, pick]);
+
   const companies = shown.filter((v) => kind(v) === "company").length;
   const people = new Set(shown.map((v) => v.visitor_id)).size;
 
@@ -74,6 +155,8 @@ export function VisitorsTable({ visits }: { visits: Visit[] }) {
         <span><b>{people}</b> people</span>
         <span><b>{companies}</b> from companies / schools</span>
       </div>
+
+      <SourcesPanel visits={base} pick={pick} onPick={setPick} />
 
       <div className={styles.filters}>
         <input placeholder="Search org, city, source…" value={query} onChange={(e) => setQuery(e.target.value)} />
